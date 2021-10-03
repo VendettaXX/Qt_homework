@@ -13,11 +13,15 @@ MainWindow::MainWindow(QWidget *parent) :
     thread=new QThread(this);
     work_thread->moveToThread(thread);
     thread->start();
-    //connect(ui->stop_button,&QPushButton::clicked,[=](){Channel::run_flg=Channel::STOP;});
+    /*channel 发送message信号给GUI线程的显示数据 */
     connect(work_thread,SIGNAL(text_message(DataItem *)),this,SLOT(display_mesg(DataItem *)));
+    /*pause_resume_btn 按钮 点击事件 绑定 GUI线程 pause_resume*/
     connect(ui->pause_resume_btn,SIGNAL(clicked()),this,SLOT(pause_resume()));
+    /*按下STOP按钮,发送stop信息 */
     connect(ui->stop_button,SIGNAL(clicked()),this,SLOT(stop()));
+    /*channel发送over_box_message,绑定GUI线程弹出窗口 */
     connect(work_thread,SIGNAL(over_box_message()),this,SLOT(display_result()));
+
 #ifdef PURE
     connect(thread,&QThread::started,[=](){work_thread->run_pure();});
 #else
@@ -132,7 +136,11 @@ void MainWindow::display_result()
            +QString::number(p_channel->frame_total_cnt,10)+'\n'\
            +"每帧时的吞吐量S为"\
            +QString::number(p_channel->frame_total_cnt*100.0/p_channel->ab_time,'f',2);
-   QMessageBox::about(nullptr,"Title",s);
+
+   //QMessageBox::about(nullptr,"Title",s);
+   InfoWindow *iw=InfoWindow::get_instance();
+   iw->show();
+
 }
 
 void MainWindow::stop()

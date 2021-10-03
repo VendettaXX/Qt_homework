@@ -1,0 +1,18 @@
+#include "infowindow.h"
+#include "ui_infowindow.h"
+
+InfoWindow::InfoWindow(QWidget *parent) :
+    QMainWindow(parent),
+    ui(new Ui::InfoWindow)
+{
+    ui->setupUi(this);
+}
+
+InfoWindow::~InfoWindow()
+{
+    delete ui;
+}
+
+
+
+InfoWindow * InfoWindow::m_instance=nullptr;

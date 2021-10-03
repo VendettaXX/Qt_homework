@@ -29,17 +29,20 @@ SOURCES += \
         mainwindow.cpp \
     channel.cpp \
     usernode.cpp \
-    multiacpro.cpp
+    multiacpro.cpp \
+    infowindow.cpp
 
 HEADERS += \
         mainwindow.h \
     channel.h \
     usernode.h \
     multiacpro.h \
-    mymodel.h
+    mymodel.h \
+    infowindow.h
 
 FORMS += \
-        mainwindow.ui
+        mainwindow.ui \
+    infowindow.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

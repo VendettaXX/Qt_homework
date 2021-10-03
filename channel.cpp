@@ -99,7 +99,6 @@ void Channel::run_pure()
         }
         if(BREAK==run_flg && en_stop_btn==true )
         {
-            qDebug()<<"2222222222222222222222222222222222"<<endl;
             en_stop_btn=false;
             emit(over_box_message());
         }
@@ -164,7 +163,6 @@ void Channel::delay_msec(int msec)
 void Channel::send_over()  //QTimer oneshot 从结点发送帧开始 定时结束
 {
     UserNode *temp;
-   // qDebug()<<__FUNCTION__<<__LINE__<<time<<endl;
     //if(RUN==run_flg)
     {
         locker.lock();
@@ -172,13 +170,9 @@ void Channel::send_over()  //QTimer oneshot 从结点发送帧开始 定时结�
         bool state=temp->st;
         user_idle_map.insert(temp->name,temp);
         work_usr_cnt--;
-        //qDebug()<<"同时有"<<work_usr_cnt<<"在发送中";
-        //qDebug()<<temp->st<<endl;
         if(true==state){
             Channel::frame_total_cnt++;
-            //qDebug()<<"frame_total_cnt="<<frame_total_cnt<<endl;
         }
-        //DataItem * data_item=new DataItem(temp->frame_begin_time,temp->name,temp->st);
         DataItem * data_item=new DataItem(temp->frame_begin_time,temp->name,temp->st,temp->collusion_list);
         emit(text_message(data_item));
         temp->st=true;    //user_work_list中取出的usernode 中的状态改为true，因为此时此结点已经处于空闲状态
@@ -203,6 +197,5 @@ unsigned  int Channel::frame_total_cnt=0;  //信道开启期间，发送的帧�
 unsigned  int Channel::frame_len=200;      //取1200，因为frame_time=1200*8b/9600bps=1s
 unsigned  int Channel::slot_cnt=0;         //时间轴上时隙点的数目
 unsigned  int Channel::ab_time=0;          //信道持续的时间
-//status      Channel::run_flg=Channel::STOP;
 Channel::status  Channel::run_flg=Channel::STOP;
 Channel::status  Channel::pre_run_flg=Channel::STOP;

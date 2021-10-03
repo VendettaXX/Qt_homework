@@ -8,6 +8,7 @@
 #include "channel.h"
 #include <QString>
 #include <QDebug>
+#include "infowindow.h"
 #include <QStandardItem>
 namespace Ui {
 class MainWindow;
@@ -28,6 +29,7 @@ private:
     Ui::MainWindow *ui;
     Channel  * p_channel;
     QThread *thread;
+    InfoWindow *iw;
 public slots:
     //void on_timer_out();
     void display_mesg(DataItem *);
