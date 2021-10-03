@@ -140,7 +140,8 @@ void MainWindow::display_result()
    //QMessageBox::about(nullptr,"Title",s);
    InfoWindow *iw=InfoWindow::get_instance();
    iw->show();
-
+   iw->setWindowModality(Qt::ApplicationModal);  //阻塞除当前窗体之外的所有窗体
+   //setWindowFlags(Qt::WindowStaysOnTopHint);
 }
 
 void MainWindow::stop()
