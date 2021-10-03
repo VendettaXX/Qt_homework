@@ -32,6 +32,8 @@ public slots:
     //void on_timer_out();
     void display_mesg(DataItem *);
     void pause_resume();
+    void display_result();
+    void stop();
 };
 
 #endif // MAINWINDOW_H

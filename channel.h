@@ -1,6 +1,6 @@
 #define NAME(cnt)  usr_##cnt
 #define USERNUM   30
-#define LAMBDA    10
+#define LAMBDA    5
 #define PURE
 #ifndef CHANNEL_H
 #define CHANNEL_H
@@ -17,6 +17,7 @@
 #include <QThread>
 #include <QEventLoop>
 #include <QMap>
+#include <QMessageBox>
 enum status{
     NON_BLOCK=0,
     BLOCK,
@@ -54,7 +55,7 @@ class Channel:public QObject
 {
  Q_OBJECT
 public:
-    enum {
+    enum  status{
         STOP=0,
         RUN=1,
         BREAK
@@ -70,11 +71,12 @@ public:
     static unsigned  int slot_cnt;
     static unsigned int frame_len;        //帧长度，暂定为1200
     static unsigned  int ab_time;         //信道仿真持续的绝对时间
-    static bool run_flg;
-    status s;                             //碰撞状态，信道中无帧，或有且仅有一帧,状态为NON_BLOCK
+    static  status pre_run_flg;
+    static  status run_flg;
     unsigned  int frame_time;             //在信道中传输一帧所需时间 值为 frame_len/bit_rate
     unsigned  int bit_rate;               //比特率
     unsigned  int work_usr_cnt=0;           //处于发送状态的用户结点数量
+    bool en_stop_btn;
     static double next_time(double lambda);
 
     void run_pure(void);
@@ -102,6 +104,7 @@ public slots:
 signals:
     void text_message(DataItem *);
     void call_send_over(unsigned int);
+    void over_box_message();
 };
 
 

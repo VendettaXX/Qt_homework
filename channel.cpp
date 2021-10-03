@@ -1,29 +1,11 @@
 #include "channel.h"
 
-
-//double next_time(double lambda)
-//{
-//    QTime time;
-//    time=QTime::currentTime();
-//    qsrand(time.msec()+time.second()*1000);
-//    double x=0.0;
-//    double pv;
-//    while((x=qrand()%100/100.0-0)==0.0);
-//    //x=qrand()%100/100.0;
-//    pv=(-1/lambda)*qLn(1-x);
-//    qDebug()<<"x="<<x<<"pv="<<pv<<endl;
-//    return pv;
-//}
 Channel::Channel(QObject *parent):QObject(parent)
 {
     work_usr_cnt=0;
+    frame_time=100;
+    en_stop_btn=false;
     setAb_time(0);
-    //qDebug()<<"this is beginning"<<endl;
-
-    //timer=new QTimer();
-    //timer->setInterval(1000);
-
-    //timer->start();
     for(int i=0;i<USERNUM;i++)
     {
         QString name="USER"+QString("%1").arg(i,4,10,QLatin1Char('0'));
@@ -37,9 +19,6 @@ Channel::Channel(QObject *parent):QObject(parent)
         qDebug()<<"Iterator"<<iter.key()<<":"<<iter.value();
         iter++;
     }
-    //QTimer::singleShot(100,this,SLOT(send_over()));
-
-    //connect(this,SIGNAL(call_send_over(unsigned int)),this,SLOT(send_over(unsigned int)));
 }
 
 double Channel::next_time(double lambda)
@@ -50,7 +29,6 @@ double Channel::next_time(double lambda)
     double x=0.0;
     double pv;
     while((x=qrand()%100/100.0-0)==0.0);
-    //x=qrand()%100/100.0;
     pv=(-1/lambda)*qLn(1-x);
     qDebug()<<"x="<<x<<"pv="<<pv<<endl;
     return pv;
@@ -119,8 +97,12 @@ void Channel::run_pure()
 
             locker.unlock();
         }
-        if(Channel::BREAK==run_flg)
-           break;
+        if(BREAK==run_flg && en_stop_btn==true )
+        {
+            qDebug()<<"2222222222222222222222222222222222"<<endl;
+            en_stop_btn=false;
+            emit(over_box_message());
+        }
     }
     qDebug()<<"共消耗"<<Channel::getAb_time()+100<<"时间"<<endl;
     qDebug()<<"总共有"<<Channel::frame_total_cnt<<"有效帧"<<"发送"<<endl;
@@ -221,4 +203,6 @@ unsigned  int Channel::frame_total_cnt=0;  //信道开启期间，发送的帧�
 unsigned  int Channel::frame_len=200;      //取1200，因为frame_time=1200*8b/9600bps=1s
 unsigned  int Channel::slot_cnt=0;         //时间轴上时隙点的数目
 unsigned  int Channel::ab_time=0;          //信道持续的时间
-bool      Channel::run_flg=STOP;
+//status      Channel::run_flg=Channel::STOP;
+Channel::status  Channel::run_flg=Channel::STOP;
+Channel::status  Channel::pre_run_flg=Channel::STOP;

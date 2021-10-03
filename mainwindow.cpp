@@ -16,6 +16,8 @@ MainWindow::MainWindow(QWidget *parent) :
     //connect(ui->stop_button,&QPushButton::clicked,[=](){Channel::run_flg=Channel::STOP;});
     connect(work_thread,SIGNAL(text_message(DataItem *)),this,SLOT(display_mesg(DataItem *)));
     connect(ui->pause_resume_btn,SIGNAL(clicked()),this,SLOT(pause_resume()));
+    connect(ui->stop_button,SIGNAL(clicked()),this,SLOT(stop()));
+    connect(work_thread,SIGNAL(over_box_message()),this,SLOT(display_result()));
 #ifdef PURE
     connect(thread,&QThread::started,[=](){work_thread->run_pure();});
 #else
@@ -120,5 +122,25 @@ void MainWindow::pause_resume()
          ui->pause_resume_btn->setText("PAUSE");
      }
      p_channel->locker.unlock();
+}
+
+void MainWindow::display_result()
+{
+   QString s;
+   s="本次仿真参数:帧时为"+QString::number(p_channel->frame_time,10)+"ms" +"本次仿真共耗时"+QString::number(p_channel->ab_time/1000.0,'f',2)+"s"+'\n'
+           +"其中有效帧的个数为"\
+           +QString::number(p_channel->frame_total_cnt,10)+'\n'\
+           +"每帧时的吞吐量S为"\
+           +QString::number(p_channel->frame_total_cnt*100.0/p_channel->ab_time,'f',2);
+   QMessageBox::about(nullptr,"Title",s);
+}
+
+void MainWindow::stop()
+{
+    p_channel->locker.lock();
+    p_channel->en_stop_btn=true;
+    p_channel->run_flg=Channel::BREAK;
+    ui->pause_resume_btn->setText("Start");
+    p_channel->locker.unlock();
 }
 
