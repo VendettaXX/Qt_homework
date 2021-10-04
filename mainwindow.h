@@ -11,6 +11,7 @@
 #include "infowindow.h"
 #include "ui_infowindow.h"
 #include <QStandardItem>
+#include <QMessageBox>
 namespace Ui {
 class MainWindow;
 }
@@ -23,6 +24,7 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
     QTimer *timer;
+    bool table_view_status;
 
 private:
     QStandardItemModel * model;

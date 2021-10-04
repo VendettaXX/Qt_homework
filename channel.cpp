@@ -2,21 +2,18 @@
 
 Channel::Channel(QObject *parent):QObject(parent)
 {
-    work_usr_cnt=0;
-    frame_time=100;
-    en_stop_btn=false;
-    setAb_time(0);
+    init_channel();
     for(int i=0;i<USERNUM;i++)
     {
         QString name="USER"+QString("%1").arg(i,4,10,QLatin1Char('0'));
         UserNode  * NAME(i)=new UserNode(name);
-        qDebug()<<NAME(i)->name<<endl;
+        //qDebug()<<NAME(i)->name<<endl;
         user_idle_map.insert(NAME(i)->name,NAME(i));
     }
     QMap<QString,UserNode*>::iterator iter=user_idle_map.begin();
     while(iter!=user_idle_map.end())
     {
-        qDebug()<<"Iterator"<<iter.key()<<":"<<iter.value();
+        //qDebug()<<"Iterator"<<iter.key()<<":"<<iter.value();
         iter++;
     }
 }
@@ -25,12 +22,12 @@ double Channel::next_time(double lambda)
 {
     QTime time;
     time=QTime::currentTime();
-    qsrand(time.msec()+time.second()*1000);
+    qsrand(static_cast<unsigned int>(time.msec()+time.second()*1000));
     double x=0.0;
     double pv;
     while((x=qrand()%100/100.0-0)==0.0);
     pv=(-1/lambda)*qLn(1-x);
-    qDebug()<<"x="<<x<<"pv="<<pv<<endl;
+   // qDebug()<<"x="<<x<<"pv="<<pv<<endl;
     return pv;
 }
 
@@ -44,8 +41,17 @@ void Channel::setAb_time(unsigned int value)
     ab_time = value;
 }
 
+void Channel::init_channel()
+{
+    work_usr_cnt=0;
+    frame_time=100;
+    frame_total_cnt=0;
+    en_stop_btn=false;
+    setAb_time(0);
+}
 
-void Channel::run_pure()
+
+void * Channel::run_pure()
 {
     while(true)
     {
@@ -55,7 +61,7 @@ void Channel::run_pure()
             unsigned int i=0;
             n_t=Channel::next_time(LAMBDA);
 
-            qDebug()<<__func__<<__LINE__<<endl;
+            //qDebug()<<__func__<<__LINE__<<endl;
             Channel::setAb_time(Channel::getAb_time()+static_cast<unsigned int>(n_t*1000));
 
             delay_msec(static_cast<int>(n_t*1000));
@@ -103,9 +109,10 @@ void Channel::run_pure()
             emit(over_box_message());
         }
     }
-    qDebug()<<"共消耗"<<Channel::getAb_time()+100<<"时间"<<endl;
-    qDebug()<<"总共有"<<Channel::frame_total_cnt<<"有效帧"<<"发送"<<endl;
-    qDebug()<<"单位时间的吞吐量为"<<(Channel::frame_total_cnt*100)/(Channel::getAb_time()*1.0)<<endl;
+//    qDebug()<<"共消耗"<<Channel::getAb_time()+100<<"时间"<<endl;
+//    qDebug()<<"总共有"<<Channel::frame_total_cnt<<"有效帧"<<"发送"<<endl;
+//    qDebug()<<"单位时间的吞吐量为"<<(Channel::frame_total_cnt*100)/(Channel::getAb_time()*1.0)<<endl;
+    return static_cast<void *>(nullptr);
 }
 void Channel::run_slot()
 {
@@ -194,8 +201,6 @@ void Channel::relay()
     emit call_send_over(Channel::ab_time);
 }
 unsigned  int Channel::frame_total_cnt=0;  //信道开启期间，发送的帧的总数目
-unsigned  int Channel::frame_len=200;      //取1200，因为frame_time=1200*8b/9600bps=1s
 unsigned  int Channel::slot_cnt=0;         //时间轴上时隙点的数目
 unsigned  int Channel::ab_time=0;          //信道持续的时间
 Channel::status  Channel::run_flg=Channel::STOP;
-Channel::status  Channel::pre_run_flg=Channel::STOP;
