@@ -138,9 +138,18 @@ void MainWindow::display_result()
            +QString::number(p_channel->frame_total_cnt*100.0/p_channel->ab_time,'f',2);
 
    //QMessageBox::about(nullptr,"Title",s);
-   InfoWindow *iw=InfoWindow::get_instance();
-   iw->show();
+   iw=InfoWindow::get_instance();
+   iw->ui->frame_time_lable->setText(QString::number(p_channel->frame_time,10));
+   iw->ui->lambda_lable->setText(QString::number(10,10));
+   iw->ui->G_lable->setText(QString::number(10*p_channel->frame_time/1000,10));
+   iw->ui->S_lable->setText(QString::number(p_channel->frame_total_cnt*100.0/p_channel->ab_time,'f',2));
+   iw->ui->ab_time_lable->setText(QString::number(p_channel->ab_time,10)+"ms");
+   iw->ui->total_valid_cnt_lable->setText(QString::number(p_channel->frame_total_cnt,10));
+
+
+
    iw->setWindowModality(Qt::ApplicationModal);  //阻塞除当前窗体之外的所有窗体
+   iw->show();
    //setWindowFlags(Qt::WindowStaysOnTopHint);
 }
 

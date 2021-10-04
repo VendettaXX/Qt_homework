@@ -9,6 +9,7 @@
 #include <QString>
 #include <QDebug>
 #include "infowindow.h"
+#include "ui_infowindow.h"
 #include <QStandardItem>
 namespace Ui {
 class MainWindow;

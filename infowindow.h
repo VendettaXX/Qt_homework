@@ -40,11 +40,13 @@ public:
 
     };
 
-private:
     Ui::InfoWindow *ui;
+
+private:
     static InfoWindow * m_instance;
 
     explicit InfoWindow(QWidget *parent = nullptr);
+   // friend class MainWindow;
 };
 
 #endif // INFOWINDOW_H

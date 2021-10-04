@@ -18,9 +18,9 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>20</y>
-      <width>63</width>
-      <height>9</height>
+      <y>15</y>
+      <width>111</width>
+      <height>21</height>
      </rect>
     </property>
     <property name="text">
@@ -32,126 +32,187 @@
      <rect>
       <x>180</x>
       <y>10</y>
-      <width>51</width>
-      <height>21</height>
+      <width>111</width>
+      <height>31</height>
      </rect>
     </property>
     <property name="text">
      <string>本次仿真结果：</string>
     </property>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QPushButton" name="BtnReadFile">
     <property name="geometry">
      <rect>
-      <x>22</x>
-      <y>42</y>
-      <width>124</width>
-      <height>76</height>
+      <x>200</x>
+      <y>144</y>
+      <width>181</width>
+      <height>51</height>
      </rect>
     </property>
-    <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="0">
-      <widget class="QLabel" name="label_2">
-       <property name="text">
-        <string>帧时：</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QLineEdit" name="lineEdit"/>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_3">
-       <property name="text">
-        <string>λ:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QLineEdit" name="lineEdit_2"/>
-     </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="label_4">
-       <property name="text">
-        <string>G：</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QLineEdit" name="lineEdit_3"/>
-     </item>
-    </layout>
+    <property name="text">
+     <string>选择保存文件路径</string>
+    </property>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QLineEdit" name="S_lable">
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>150</y>
-      <width>217</width>
-      <height>24</height>
+      <x>260</x>
+      <y>103</y>
+      <width>121</width>
+      <height>22</height>
      </rect>
     </property>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QLabel" name="label_9">
-       <property name="text">
-        <string>FilePath</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="lineEdit_7"/>
-     </item>
-     <item>
-      <widget class="QPushButton" name="BtnReadFile">
-       <property name="text">
-        <string>选择保存文件路径</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QLineEdit" name="total_valid_cnt_lable">
+    <property name="geometry">
+     <rect>
+      <x>260</x>
+      <y>77</y>
+      <width>121</width>
+      <height>22</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="ab_time_lable">
+    <property name="geometry">
+     <rect>
+      <x>260</x>
+      <y>51</y>
+      <width>121</width>
+      <height>22</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_8">
+    <property name="geometry">
+     <rect>
+      <x>186</x>
+      <y>103</y>
+      <width>41</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>S：</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_7">
     <property name="geometry">
      <rect>
       <x>185</x>
-      <y>44</y>
-      <width>142</width>
-      <height>76</height>
+      <y>77</y>
+      <width>71</width>
+      <height>20</height>
      </rect>
     </property>
-    <layout class="QGridLayout" name="gridLayout_2">
-     <item row="0" column="0">
-      <widget class="QLabel" name="label_6">
-       <property name="text">
-        <string>总耗时</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QLineEdit" name="lineEdit_4"/>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_7">
-       <property name="text">
-        <string>有效帧数目</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QLineEdit" name="lineEdit_5"/>
-     </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="label_8">
-       <property name="text">
-        <string>S：</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QLineEdit" name="lineEdit_6"/>
-     </item>
-    </layout>
+    <property name="text">
+     <string>有效帧数目</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_6">
+    <property name="geometry">
+     <rect>
+      <x>187</x>
+      <y>51</y>
+      <width>51</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>总耗时</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>31</x>
+      <y>77</y>
+      <width>16</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>λ:</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="frame_time_lable">
+    <property name="geometry">
+     <rect>
+      <x>62</x>
+      <y>51</y>
+      <width>91</width>
+      <height>22</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>31</x>
+      <y>51</y>
+      <width>27</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>帧时：</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_4">
+    <property name="geometry">
+     <rect>
+      <x>31</x>
+      <y>103</y>
+      <width>16</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>G：</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lambda_lable">
+    <property name="geometry">
+     <rect>
+      <x>62</x>
+      <y>77</y>
+      <width>91</width>
+      <height>22</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="G_lable">
+    <property name="geometry">
+     <rect>
+      <x>62</x>
+      <y>103</y>
+      <width>91</width>
+      <height>22</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_9">
+    <property name="geometry">
+     <rect>
+      <x>42</x>
+      <y>151</y>
+      <width>36</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>FilePath</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_7">
+    <property name="geometry">
+     <rect>
+      <x>82</x>
+      <y>151</y>
+      <width>91</width>
+      <height>22</height>
+     </rect>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
