@@ -105,8 +105,10 @@ void * Channel::run_pure()
         }
         if(BREAK==run_flg && en_stop_btn==true )
         {
+            locker.lock();
             en_stop_btn=false;
             emit(over_box_message());
+            locker.unlock();
         }
     }
 //    qDebug()<<"共消耗"<<Channel::getAb_time()+100<<"时间"<<endl;
@@ -121,31 +123,39 @@ void Channel::run_slot()
     unsigned int a=0;
     n_t=static_cast<unsigned int>(next_time(LAMBDA)*1000);
     ab_time+=n_t;
-    while(RUN==run_flg)
-    {
-        unsigned int i=0;
-        if(ab_time%100!=0){
-            barrier=(ab_time/100+1)*100;
+    while(true){
+        while(RUN==run_flg)
+        {
+            unsigned int i=0;
+            if(ab_time%100!=0){
+                barrier=(ab_time/100+1)*100;
+            }
+            else {
+                barrier=ab_time;
+            }
+            i=1;
+            while((ab_time+=(static_cast<unsigned int>(next_time(LAMBDA)*1000)))<barrier){
+                i++;
+            }
+            slot_list.append(new Item(barrier/100,i));
+            delay_msec(static_cast<int>(barrier));
         }
-        else {
-            barrier=ab_time;
+        for(QList<Item *>::iterator iter=slot_list.begin();iter!=slot_list.end();iter++)
+        {
+            if((*iter)->cnt==1)
+                a++;
         }
-        i=1;
-        while((ab_time+=(static_cast<unsigned int>(next_time(LAMBDA)*1000)))<barrier){
-            i++;
+        if(BREAK==run_flg && en_stop_btn==true )
+        {
+            locker.lock();
+            en_stop_btn=false;
+            qDebug()<<"a="<<a<<endl;
+            qDebug()<<"总共"<<slot_list.last()->index<<"帧"<<endl;
+            qDebug()<<a*1.0/slot_list.last()->index<<endl;
+            emit(over_box_message());
+            locker.unlock();
         }
-        slot_list.append(new Item(barrier/100,i));
-        delay_msec(10);
     }
-    for(QList<Item *>::iterator iter=slot_list.begin();iter!=slot_list.end();iter++)
-    {
-        //qDebug()<<(*iter)->cnt<<endl;
-        if((*iter)->cnt==1)
-            a++;
-    }
-    qDebug()<<a<<endl;
-    qDebug()<<slot_list.last()->index<<endl;
-    qDebug()<<a/(double)slot_list.last()->index<<endl;
 }
 
 void Channel::delay_msec(int msec)
@@ -155,17 +165,6 @@ void Channel::delay_msec(int msec)
     loop.exec();//事件循环开始执行，程序会卡在这里，直到定时时间到，本循环被退出
 }
 
-
-//void Channel::on_time_out()
-//{
-//    //locker.lock();
-
-//    slot_cnt++;
-
-
-//    //locker.unlock();
-
-//}
 
 void Channel::send_over()  //QTimer oneshot 从结点发送帧开始 定时结束
 {
