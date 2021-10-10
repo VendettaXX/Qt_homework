@@ -98,7 +98,7 @@ void MainWindow::display_mesg(DataItem * data_item)
             QString s;
             foreach(UserInfo * p,data_item->collusion_list)
             {
-                s=s+"本帧与"+QString::number(p->current_time,10)+p->user_id+"碰撞"+"\n";
+                s=s+"本帧与"+QString::number(p->current_time,10)+p->user_id+"碰撞"+"/";
             }
             model->setItem(num,2,new QStandardItem(s));
             model->setItem(num,3,new QStandardItem("无效"));

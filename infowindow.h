@@ -6,6 +6,7 @@
 #include <QFileDialog>
 #include "ui_mainwindow.h"
 #include "exportexcelobject.h"
+#include <QFile>
 
 namespace Ui {
 class InfoWindow;

@@ -14,35 +14,31 @@ InfoWindow::InfoWindow(MainWindow * p,QWidget *parent) :
 
 void InfoWindow::save_btn_clicked()
 {
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Excel file"), qApp->applicationDirPath (),
-                                                    tr("Excel Files (*.xls)"));
+    QString text_data;
+    unsigned int rows,colums;
+    QString fileName = QFileDialog::getSaveFileName(this, tr("csv file"), qApp->applicationDirPath (),
+                                                    tr("Csv Files (*.csv)"));
     if (fileName.isEmpty())
         return;
-    ExportExcelObject obj(fileName, "mydata", this->p_main->ui->table_view);
-
-    //    // you can change the column order and
-    //    // choose which colum to export
-    obj.addField(0, "colum1", "char(20)");
-    obj.addField(3, "colum4", "char(20)");
-    obj.addField(1, "colum2", "char(20)");
-    obj.addField(2, "colum3", "char(20)");
-
-    obj.addField(4, "colum5", "char(20)");
-    obj.addField(5, "colum6", "char(20)");
-    obj.addField(6, "colum7", "char(20)");
-
-//    ui->progressBar->setValue(0);
-//    ui->progressBar->setMaximum(ui->tableView->model()->rowCount());
-
-//    connect(&obj, SIGNAL(exportedRowCount(int)), ui->progressBar, SLOT(setValue(int)));
-
-	int retVal = obj.export2Excel();
-	if( retVal > 0)
-	{
-		QMessageBox::information(this, tr("Done"),
-		                         QString(tr("%1 records exported!")).arg(retVal)
-		                         );
-	}
+    rows=static_cast<unsigned int>(p_main->model->rowCount());
+    colums=static_cast<unsigned int>(p_main->model->columnCount());
+    for(unsigned int i=0;i<rows;i++)
+    {
+        for(unsigned int j=0;j<colums;j++)
+        {
+            text_data += p_main->model->data(p_main->model->index(i,j)).toString();
+            text_data+=",";
+        }
+        text_data+="\n";
+    }
+    qDebug()<<"text_data"<<text_data<<endl;
+    QFile csv_file(fileName);
+    if(csv_file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        QTextStream out(&csv_file);
+        out << text_data;
+        csv_file.close();
+    }
+    this->close();
 }
 
 InfoWindow::~InfoWindow()

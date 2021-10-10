@@ -26,9 +26,9 @@ public:
     QTimer *timer;
     bool table_view_status;
     Ui::MainWindow *ui;
+    QStandardItemModel * model;
 
 private:
-    QStandardItemModel * model;
     void init_table(QStandardItemModel *);
     Channel  * p_channel;
     QThread *thread;
