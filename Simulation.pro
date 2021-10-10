@@ -5,6 +5,7 @@
 #-------------------------------------------------
 
 QT       += core gui
+QT  +=sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -30,7 +31,8 @@ SOURCES += \
     channel.cpp \
     usernode.cpp \
     multiacpro.cpp \
-    infowindow.cpp
+    infowindow.cpp \
+    exportexcelobject.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -38,7 +40,8 @@ HEADERS += \
     usernode.h \
     multiacpro.h \
     mymodel.h \
-    infowindow.h
+    infowindow.h \
+    exportexcelobject.h
 
 FORMS += \
         mainwindow.ui \

@@ -40,7 +40,7 @@
      <string>本次仿真结果：</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="BtnReadFile">
+   <widget class="QPushButton" name="save_btn">
     <property name="geometry">
      <rect>
       <x>200</x>

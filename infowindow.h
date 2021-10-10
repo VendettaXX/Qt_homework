@@ -3,22 +3,26 @@
 
 #include <QMainWindow>
 #include <QDebug>
+#include <QFileDialog>
+#include "ui_mainwindow.h"
+#include "exportexcelobject.h"
+#include <QFile>
 
 namespace Ui {
 class InfoWindow;
 }
-
+class MainWindow;
 class InfoWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
     ~InfoWindow();
-    static InfoWindow * get_instance()
+    static InfoWindow * get_instance(MainWindow *p)
     {
         if(nullptr==m_instance)
         {
-            m_instance=new InfoWindow();
+            m_instance=new InfoWindow(p);
             static InfoInClass cl;
         }
         return m_instance;
@@ -41,12 +45,14 @@ public:
     };
 
     Ui::InfoWindow *ui;
-
 private:
     static InfoWindow * m_instance;
+    MainWindow *p_main;
+    InfoWindow(MainWindow * p,QWidget *parent = nullptr );
 
-    explicit InfoWindow(QWidget *parent = nullptr);
    // friend class MainWindow;
+private slots:
+    void save_btn_clicked();
 };
 
 #endif // INFOWINDOW_H

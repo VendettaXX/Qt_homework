@@ -6,6 +6,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    QTimer  *timer=new QTimer(this);
+    timer->setInterval(1000);
+    timer->start();
     model=new QStandardItemModel(this);
     init_table(model);
     Channel * work_thread=new Channel;// 必须new，如果是Channel c，再在connect里面用&c，不知道为什么，槽函数不能得到执行
@@ -21,12 +24,12 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->stop_button,SIGNAL(clicked()),this,SLOT(stop()));
     /*channel发送over_box_message,绑定GUI线程弹出窗口 */
     connect(work_thread,SIGNAL(over_box_message()),this,SLOT(display_result()));
-
 #ifdef PURE
     connect(thread,&QThread::started,[=](){work_thread->run_pure();});
 #else
     connect(thread,&QThread::started,[=](){work_thread->run_slot();});
 #endif
+    connect(timer,SIGNAL(timeout()),this,SLOT(time_out()));
     //connect(thread,&QThread::finished,thread,&QObject::deleteLater);
     // connect(thread,SIGNAL(finished),work_thread,SLOT(deleteLater()));
     //connect(thread,SIGNAL(finished),thread,SLOT(deleteLater()));
@@ -57,16 +60,19 @@ void MainWindow::init_table(QStandardItemModel * model)
     ui->table_view->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
  }
 
-//void MainWindow::on_timer_out()
-//{
-//   static int value=0;
-//   qDebug()<<"value is %d"<<value++<<endl;
-//}
+void MainWindow::time_out()
+{
+   static int value=0;
+   if(Channel::RUN!=Channel::run_flg){
+       qDebug()<<"value is %d"<<value++<<endl;
+   }
+}
 
 void MainWindow::display_mesg(DataItem * data_item)
 {
-
+#ifdef PURE
     static int num=0;
+    /*table_view_status 表征此时是暂停还是停止，num是否清零*/
     if(table_view_status==true)
     {
         qDebug()<<__func__<<"num="<<num<<endl;
@@ -92,11 +98,8 @@ void MainWindow::display_mesg(DataItem * data_item)
             QString s;
             foreach(UserInfo * p,data_item->collusion_list)
             {
-
-                s=s+"本帧与"+QString::number(p->current_time,10)+p->user_id+"碰撞"+"\n";
-
+                s=s+"本帧与"+QString::number(p->current_time,10)+p->user_id+"碰撞"+"/";
             }
-
             model->setItem(num,2,new QStandardItem(s));
             model->setItem(num,3,new QStandardItem("无效"));
             model->item(num,0)->setBackground(QBrush(QColor(252,230,202)));
@@ -105,7 +108,6 @@ void MainWindow::display_mesg(DataItem * data_item)
             model->item(num,3)->setBackground(QBrush(QColor(252,230,202)));
             //model->item(num,4)->setBackground(QBrush(QColor(128,128,0)));
         }
-
         model->setItem(num,4,new QStandardItem(QString::number(Channel::frame_total_cnt,10)));
 
 
@@ -119,6 +121,21 @@ void MainWindow::display_mesg(DataItem * data_item)
 
     //delete(data_item);
     //data_item=nullptr;
+#else
+
+
+
+
+
+
+
+
+
+
+
+
+
+#endif
 }
 
 void MainWindow::pause_resume()
@@ -134,11 +151,11 @@ void MainWindow::pause_resume()
         p_channel->run_flg=Channel::RUN;
         p_channel->init_channel();
         table_view_status=false;
-        //ui->table_view->clearSpans();                    //清空table_view
+        //ui->table_view->clearSpans();
         model->removeRows(0,model->rowCount());
+        //清空table_view
 
         //model->clear();
-
         ui->pause_resume_btn->setText("PAUSE");
     }
     else{
@@ -159,7 +176,7 @@ void MainWindow::display_result()
            +QString::number(p_channel->frame_total_cnt*100.0/p_channel->ab_time,'f',2);
 
    //QMessageBox::about(nullptr,"Title",s);
-   iw=InfoWindow::get_instance();
+   iw=InfoWindow::get_instance(this);
    iw->ui->frame_time_lable->setText(QString::number(p_channel->frame_time,10));
    iw->ui->lambda_lable->setText(QString::number(10,10));
    iw->ui->G_lable->setText(QString::number(10*p_channel->frame_time/1000,10));

@@ -15,7 +15,7 @@
 namespace Ui {
 class MainWindow;
 }
-
+class InfoWindow;
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -25,16 +25,16 @@ public:
     ~MainWindow();
     QTimer *timer;
     bool table_view_status;
+    Ui::MainWindow *ui;
+    QStandardItemModel * model;
 
 private:
-    QStandardItemModel * model;
     void init_table(QStandardItemModel *);
-    Ui::MainWindow *ui;
     Channel  * p_channel;
     QThread *thread;
     InfoWindow *iw;
 public slots:
-    //void on_timer_out();
+    void time_out();
     void display_mesg(DataItem *);
     void pause_resume();
     void display_result();
