@@ -61,11 +61,19 @@ void * Channel::run_pure()
         while(RUN==run_flg)
         {
 
+
             double n_t;
             unsigned int i=0;
             n_t=Channel::next_time(LAMBDA);
 
             //qDebug()<<__func__<<__LINE__<<endl;
+//            if(steps<=0)
+//            {
+//                p_main->ui->pause_resume_btn->setText("RESUME");
+//                run_flg=STOP;
+//                break;
+//            }
+//            steps--;
             Channel::setAb_time(Channel::getAb_time()+static_cast<unsigned int>(n_t*1000));
 
             delay_msec(static_cast<int>(n_t*1000));
@@ -115,9 +123,6 @@ void * Channel::run_pure()
             locker.unlock();
         }
     }
-//    qDebug()<<"共消耗"<<Channel::getAb_time()+100<<"时间"<<endl;
-//    qDebug()<<"总共有"<<Channel::frame_total_cnt<<"有效帧"<<"发送"<<endl;
-//    qDebug()<<"单位时间的吞吐量为"<<(Channel::frame_total_cnt*100)/(Channel::getAb_time()*1.0)<<endl;
     return static_cast<void *>(nullptr);
 }
 void Channel::run_slot()
@@ -224,7 +229,8 @@ void  Channel::delay_msec(unsigned int msec)
 void Channel::send_over()  //QTimer oneshot 从结点发送帧开始 定时结束
 {
     UserNode *temp;
-    //if(RUN==run_flg)
+    //if(RUN==run_flg)   存在prue_aloha 执行到定时器已经开启了，但是run_flg
+    // 改变了，这个定时器还是要完成的
     {
         locker.lock();
         temp=user_work_list.takeFirst();//取出user_work_list中的 usrnode

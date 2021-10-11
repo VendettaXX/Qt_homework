@@ -1,7 +1,7 @@
 #define NAME(cnt)  usr_##cnt
 #define USERNUM   3000
 #define LAMBDA    5
-//#define PURE
+#define PURE
 #ifndef CHANNEL_H
 #define CHANNEL_H
 #include <QTimer>

@@ -71,7 +71,7 @@ void MainWindow::time_out()
 void MainWindow::display_mesg(DataItem * data_item)
 {
 #ifdef PURE
-    static int num=0;
+    qDebug()<<__func__<<__LINE__<<"table_view_status="<<table_view_status<<endl;
     /*table_view_status 表征此时是暂停还是停止，num是否清零*/
     if(table_view_status==true)
     {
