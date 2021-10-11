@@ -46,7 +46,9 @@ void Channel::init_channel()
     work_usr_cnt=0;
     frame_time=100;
     frame_total_cnt=0;
+    barrier=0;
     en_stop_btn=false;
+
     setAb_time(0);
 }
 
@@ -119,8 +121,8 @@ void * Channel::run_pure()
 void Channel::run_slot()
 {
     //不会和任何其他线程或者定时器冲突，所以不用加锁
-    unsigned int ab_time=0;
-    unsigned int n_t,barrier;
+    //unsigned int ab_time=0;
+    unsigned int n_t;
     unsigned int a=0;
     DataItem * data_item=new DataItem(0,"default",true);
     QList<QString> work_list;
@@ -144,6 +146,7 @@ void Channel::run_slot()
             if(!data_item->collusion_list.isEmpty())
                 data_item->collusion_list.clear();
             unsigned int i=0;
+            qDebug()<<__FUNCTION__<<__LINE__<<"ab_time="<<ab_time<<endl;
             if(ab_time%100!=0){
                 barrier=(ab_time/100+1)*100;
             }

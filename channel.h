@@ -76,12 +76,14 @@ public:
     static unsigned  int frame_total_cnt;       //信道仿真期间有效帧数目，有效帧值得是传输成功并未发生碰撞的帧
     static unsigned  int slot_cnt;
     static unsigned  int ab_time;         //信道仿真持续的绝对时间
+
     static  status run_flg;
     unsigned  int frame_time;             //在信道中传输一帧所需时间 值为 frame_len/bit_rate
     unsigned  int bit_rate;               //比特率
     unsigned  int work_usr_cnt=0;           //处于发送状态的用户结点数量
     bool en_stop_btn;
     static double next_time(double lambda);
+    unsigned int barrier=0;
 
     void * run_pure(void);
     void run_slot(void);
