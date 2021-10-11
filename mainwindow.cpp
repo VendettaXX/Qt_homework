@@ -11,7 +11,7 @@ MainWindow::MainWindow(QWidget *parent) :
     timer->start();
     model=new QStandardItemModel(this);
     init_table(model);
-    Channel * work_thread=new Channel;// 必须new，如果是Channel c，再在connect里面用&c，不知道为什么，槽函数不能得到执行
+    Channel * work_thread=new Channel(this);// 必须new，如果是Channel c，再在connect里面用&c，不知道为什么，槽函数不能得到执行
     p_channel=work_thread;
     thread=new QThread(this);
     work_thread->moveToThread(thread);
@@ -124,6 +124,7 @@ void MainWindow::display_mesg(DataItem * data_item)
 #else
     static int num=0;
     /*table_view_status 表征此时是暂停还是停止，num是否清零*/
+    qDebug()<<"table_view_status="<<table_view_status<<endl;
     if(table_view_status==true)
     {
         QString user_id;
@@ -181,20 +182,16 @@ void MainWindow::pause_resume()
         ui->pause_resume_btn->setText("RESUME");
     }
     else if (ui->pause_resume_btn->text()=="START"){
-        //QMessageBox::about(nullptr,"Title","hello,world");
-        p_channel->run_flg=Channel::RUN;
         p_channel->init_channel();
+        p_channel->steps=(ui->steps_line->currentText().toInt());
         table_view_status=false;
-        //ui->table_view->clearSpans();
         model->removeRows(0,model->rowCount());
-        //清空table_view
-
-        //model->clear();
         ui->pause_resume_btn->setText("PAUSE");
+        p_channel->run_flg=Channel::RUN;
     }
     else{
+        p_channel->steps=ui->steps_line->currentText().toInt();
         p_channel->run_flg=Channel::RUN;
-
         ui->pause_resume_btn->setText("PAUSE");
     }
     p_channel->locker.unlock();

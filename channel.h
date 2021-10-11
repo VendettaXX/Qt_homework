@@ -18,6 +18,8 @@
 #include <QEventLoop>
 #include <QMap>
 #include <QMessageBox>
+#include "ui_mainwindow.h"
+class MainWindow;
 enum status{
     NON_BLOCK=0,
     BLOCK,
@@ -67,7 +69,7 @@ public:
         BREAK
     };
 public:
-    explicit Channel(QObject *parent =nullptr);
+    Channel(MainWindow * ,QObject *parent =nullptr);
 
     ~Channel()
     {
@@ -84,11 +86,14 @@ public:
     bool en_stop_btn;
     static double next_time(double lambda);
     unsigned int barrier=0;
+    int steps;
+
+    MainWindow *p_main;
 
     void * run_pure(void);
     void run_slot(void);
 
-    void delay_msec(unsigned int msec);
+    int delay_msec(unsigned int msec,int cnt);
     QTimer * get_QTimer();
     MultiAcPro * get_protocal();
     static unsigned int getAb_time();
