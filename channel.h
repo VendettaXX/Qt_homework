@@ -93,7 +93,7 @@ public:
     void * run_pure(void);
     void run_slot(void);
 
-    int delay_msec(unsigned int msec,int cnt);
+    void delay_msec(unsigned int msec);
     QTimer * get_QTimer();
     MultiAcPro * get_protocal();
     static unsigned int getAb_time();

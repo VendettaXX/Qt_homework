@@ -122,7 +122,7 @@ void MainWindow::display_mesg(DataItem * data_item)
     //delete(data_item);
     //data_item=nullptr;
 #else
-    static int num=0;
+    //static int num=0;
     /*table_view_status 表征此时是暂停还是停止，num是否清零*/
     qDebug()<<"table_view_status="<<table_view_status<<endl;
     if(table_view_status==true)
@@ -184,7 +184,8 @@ void MainWindow::pause_resume()
     else if (ui->pause_resume_btn->text()=="START"){
         p_channel->init_channel();
         p_channel->steps=(ui->steps_line->currentText().toInt());
-        table_view_status=false;
+        //table_view_status=false;
+        table_view_status=true;
         model->removeRows(0,model->rowCount());
         ui->pause_resume_btn->setText("PAUSE");
         p_channel->run_flg=Channel::RUN;
@@ -227,6 +228,7 @@ void MainWindow::stop()
     p_channel->locker.lock();
     p_channel->en_stop_btn=true;
     p_channel->run_flg=Channel::BREAK;
+    num=0;
     ui->pause_resume_btn->setText("START");
     p_channel->locker.unlock();
 

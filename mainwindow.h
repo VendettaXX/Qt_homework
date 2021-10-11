@@ -33,6 +33,7 @@ private:
     Channel  * p_channel;
     QThread *thread;
     InfoWindow *iw;
+    int num;
 public slots:
     void time_out();
     void display_mesg(DataItem *);

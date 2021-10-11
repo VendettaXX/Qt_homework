@@ -50,7 +50,7 @@ void Channel::init_channel()
     frame_total_cnt=0;
     barrier=0;
     en_stop_btn=false;
-    setAb_time(0);
+    setAb_time(static_cast<unsigned int>(next_time(LAMBDA)*1000));
 }
 
 
@@ -68,7 +68,7 @@ void * Channel::run_pure()
             //qDebug()<<__func__<<__LINE__<<endl;
             Channel::setAb_time(Channel::getAb_time()+static_cast<unsigned int>(n_t*1000));
 
-            delay_msec(static_cast<int>(n_t*1000),100);
+            delay_msec(static_cast<int>(n_t*1000));
 
             QString index="USER "+QString("%1").arg(qrand()%USERNUM,4,10,QLatin1Char('0'));
             user_id=index;
@@ -134,10 +134,11 @@ void Channel::run_slot()
     n_t=static_cast<unsigned int>(next_time(LAMBDA)*1000);
 
     ab_time+=n_t;
+    qDebug()<<__FUNCTION__<<__LINE__<<"ab_time="<<ab_time<<endl;
 
     unsigned int temp;
     temp=(ab_time%100==0)?ab_time:(ab_time/100+1)*100;
-    delay_msec(temp,100);
+    delay_msec(temp);
     qDebug()<<temp<<endl;
     while(true)
     {
@@ -151,12 +152,12 @@ void Channel::run_slot()
             }
             steps--;
 
+            qDebug()<<__FUNCTION__<<__LINE__<<"ab_time="<<ab_time<<endl;
             //清空work_list
             if(!work_list.isEmpty())
                 work_list.clear();
             if(!data_item->collusion_list.isEmpty())
                 data_item->collusion_list.clear();
-            unsigned int i=0;
             qDebug()<<__FUNCTION__<<__LINE__<<"ab_time="<<ab_time<<endl;
             //ab_time=static_cast<unsigned int>(next_time(LAMBDA)*1000);
             if(ab_time%100!=0){
@@ -167,6 +168,7 @@ void Channel::run_slot()
             }
             // Item * item=new Item(barrier/100,1);
             item->index=barrier/100;
+            qDebug()<<"barrier"<<barrier<<endl;
             item->cnt=1;
             user_name="USER"+QString("%1").arg(qrand()%USERNUM,4,10,QLatin1Char('0'));
             qDebug()<<"user_name="<<user_name<<endl;
@@ -177,7 +179,7 @@ void Channel::run_slot()
                 qDebug()<<"user_name="<<user_name<<endl;
                 data_item->collusion_list.push_back(new UserInfo(ab_time,user_name));
                 item->cnt++;
-                delay_msec(qrand()%30,100);
+                delay_msec(qrand()%30);
             }
 
 
@@ -191,7 +193,7 @@ void Channel::run_slot()
             //slot_list.at(slot_list.size()-1)->name_list.push_back(id_name);
             temp=(ab_time%100==0)?ab_time:(ab_time/100+1)*100;
 
-            delay_msec(temp-barrier,100);
+            delay_msec(temp-barrier);
             qDebug()<<"temp-barrier"<<temp-barrier<<"/t"<<"i="<<item->cnt<<endl;
         }
         if(BREAK==run_flg && en_stop_btn==true )
@@ -211,13 +213,11 @@ void Channel::run_slot()
     }
 }
 
-int  Channel::delay_msec(unsigned int msec, int cnt)
+void  Channel::delay_msec(unsigned int msec)
 {
     QEventLoop loop;//定义一个新的事件循环
-    cnt--;
     QTimer::singleShot(msec, &loop, SLOT(quit()));//创建单次定时器，槽函数为事件循环的退出函数
     loop.exec();//事件循环开始执行，程序会卡在这里，直到定时时间到，本循环被退出
-    return  cnt;
 }
 
 
