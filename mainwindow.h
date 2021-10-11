@@ -36,6 +36,7 @@ private:
 public slots:
     void time_out();
     void display_mesg(DataItem *);
+    //void display_mesg_slot(SlotData *);
     void pause_resume();
     void display_result();
     void stop();

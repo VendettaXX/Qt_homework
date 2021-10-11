@@ -1,7 +1,7 @@
 #define NAME(cnt)  usr_##cnt
-#define USERNUM   30
+#define USERNUM   3000
 #define LAMBDA    5
-#define PURE
+//#define PURE
 #ifndef CHANNEL_H
 #define CHANNEL_H
 #include <QTimer>
@@ -29,6 +29,7 @@ public:
     unsigned int index;
     unsigned int cnt;
     Item(unsigned int index,unsigned int cnt):index(index),cnt(cnt){}
+    QList<QString> name_list;
 };
 /*用于pure_aloha 协议中，发送到text_view的条目 */
 class DataItem{
@@ -49,6 +50,11 @@ public:
             }
         }
     }
+};
+class SlotData{
+public:
+    QList<QString> list;
+    unsigned int time;
 };
 
 class Channel:public QObject
@@ -80,7 +86,7 @@ public:
     void * run_pure(void);
     void run_slot(void);
 
-    void delay_msec(int msec);
+    void delay_msec(unsigned int msec);
     QTimer * get_QTimer();
     MultiAcPro * get_protocal();
     static unsigned int getAb_time();

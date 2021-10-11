@@ -53,7 +53,7 @@ void Channel::init_channel()
 
 void * Channel::run_pure()
 {
-    while(true)
+    while(true)  //可能会和send_over 冲突，所以加锁
     {
         while(RUN==run_flg)
         {
@@ -118,14 +118,31 @@ void * Channel::run_pure()
 }
 void Channel::run_slot()
 {
+    //不会和任何其他线程或者定时器冲突，所以不用加锁
     unsigned int ab_time=0;
     unsigned int n_t,barrier;
     unsigned int a=0;
+    DataItem * data_item=new DataItem(0,"default",true);
+    QList<QString> work_list;
+    Item * item=new Item(0,1);
+    QString user_name;
     n_t=static_cast<unsigned int>(next_time(LAMBDA)*1000);
+
     ab_time+=n_t;
-    while(true){
+
+    unsigned int temp;
+    temp=(ab_time%100==0)?ab_time:(ab_time/100+1)*100;
+    delay_msec(temp);
+    qDebug()<<temp<<endl;
+    while(true)
+    {
         while(RUN==run_flg)
         {
+            //清空work_list
+            if(!work_list.isEmpty())
+                work_list.clear();
+            if(!data_item->collusion_list.isEmpty())
+                data_item->collusion_list.clear();
             unsigned int i=0;
             if(ab_time%100!=0){
                 barrier=(ab_time/100+1)*100;
@@ -133,32 +150,89 @@ void Channel::run_slot()
             else {
                 barrier=ab_time;
             }
-            i=1;
-            while((ab_time+=(static_cast<unsigned int>(next_time(LAMBDA)*1000)))<barrier){
-                i++;
+            // Item * item=new Item(barrier/100,1);
+            item->index=barrier/100;
+            item->cnt=1;
+            user_name="USER"+QString("%1").arg(qrand()%USERNUM,4,10,QLatin1Char('0'));
+            qDebug()<<"user_name="<<user_name<<endl;
+            data_item->collusion_list.push_back(new UserInfo(ab_time,user_name));
+            while((ab_time+=(static_cast<unsigned int>(next_time(LAMBDA)*1000)))<barrier)
+            {
+                //每次next_time 到的时候随机选取一个userid，如果选取的userid已经在work_list里面则再次随机一个名字
+                //                while(true)
+                //                {
+                //                    user_name="USER"+QString("%1").arg(qrand()%USERNUM,4,10,QLatin1Char('0'));
+                //                    QList<QString>::iterator iter;
+                //                    if(!work_list.isEmpty())
+                //                    {
+
+                //                        for(iter=work_list.begin();iter!=work_list.end();iter++)
+                //                        {
+                //                            if((*iter)==user_name)
+                //                                break;
+                //                        }
+                //                    }
+                //                    else
+                //                    {
+                //                        work_list.append(user_name);
+                //                    }
+                //                    if(iter!=work_list.end())
+                //                    {
+                //                        work_list.append(user_name);
+                //                        break;
+                //                    }
+                //                    data_item->collusion_list.push_back(new UserInfo(ab_time,user_name));
+                //                }
+
+
+
+                user_name="USER"+QString("%1").arg(qrand()%USERNUM,4,10,QLatin1Char('0'));
+                qDebug()<<"user_name="<<user_name<<endl;
+                data_item->collusion_list.push_back(new UserInfo(ab_time,user_name));
+                item->cnt++;
+                delay_msec(qrand()%30);
             }
-            slot_list.append(new Item(barrier/100,i));
-            delay_msec(static_cast<int>(barrier));
+
+
+            data_item->time=barrier;
+            qDebug()<<"barrier="<<barrier<<endl;
+            emit(text_message(data_item));
+            //QString id_name="USER"+QString("%1").arg(qrand()%USERNUM,4,10,QLatin1Char('0'));
+            slot_list.append(item);
+            if (slot_list.at(slot_list.size()-1)->cnt==1)
+                frame_total_cnt++;
+            //slot_list.at(slot_list.size()-1)->name_list.push_back(id_name);
+            temp=(ab_time%100==0)?ab_time:(ab_time/100+1)*100;
+            delay_msec(temp-barrier);
+            qDebug()<<"temp-barrier"<<temp-barrier<<"/t"<<"i="<<item->cnt<<endl;
+
+
         }
-        for(QList<Item *>::iterator iter=slot_list.begin();iter!=slot_list.end();iter++)
-        {
-            if((*iter)->cnt==1)
-                a++;
-        }
+//        for(QList<Item *>::iterator iter=slot_list.begin();iter!=slot_list.end();iter++)
+//        {
+//            if((*iter)->cnt==1){
+//            	frame_total_cnt++;
+//                a++;
+//            }
+//        }
         if(BREAK==run_flg && en_stop_btn==true )
         {
             locker.lock();
             en_stop_btn=false;
-            qDebug()<<"a="<<a<<endl;
-            qDebug()<<"总共"<<slot_list.last()->index<<"帧"<<endl;
-            qDebug()<<a*1.0/slot_list.last()->index<<endl;
+            //qDebug()<<"a="<<a<<endl;
+            qDebug()<<"frame_total_cnt="<<frame_total_cnt<<endl;
+            //qDebug()<<"总共"<<slot_list.last()->index<<"帧"<<endl;
+            qDebug()<<"总共"<<item->index<<"帧"<<endl;
+            //qDebug()<<a*1.0/slot_list.last()->index<<endl;
+            //qDebug()<<frame_total_cnt*1.0/slot_list.last()->index<<endl;
+            qDebug()<<frame_total_cnt*1.0/item->index<<endl;
             emit(over_box_message());
             locker.unlock();
         }
     }
 }
 
-void Channel::delay_msec(int msec)
+void Channel::delay_msec(unsigned int msec)
 {
     QEventLoop loop;//定义一个新的事件循环
     QTimer::singleShot(msec, &loop, SLOT(quit()));//创建单次定时器，槽函数为事件循环的退出函数

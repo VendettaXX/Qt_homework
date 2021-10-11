@@ -64,7 +64,7 @@ void MainWindow::time_out()
 {
    static int value=0;
    if(Channel::RUN!=Channel::run_flg){
-       qDebug()<<"value is %d"<<value++<<endl;
+       //qDebug()<<"value is %d"<<value++<<endl;
    }
 }
 
@@ -122,19 +122,53 @@ void MainWindow::display_mesg(DataItem * data_item)
     //delete(data_item);
     //data_item=nullptr;
 #else
+    static int num=0;
+    /*table_view_status 表征此时是暂停还是停止，num是否清零*/
+    if(table_view_status==true)
+    {
+        QString user_id;
+        model->setItem(num,0,new QStandardItem(QString::number(data_item->time,10)+"ms"));
+        if(!data_item->collusion_list.isEmpty())
+        {
+            qDebug()<<"collusion_list.size="<<data_item->collusion_list.size()<<endl;
+            for(int i=0;i<data_item->collusion_list.size();i++)
+            {
+                user_id+=(data_item->collusion_list.at(i)->user_id+'\t');
+            }
+        }
+        //model->setItem(num,0,new QStandardItem(QString::number(data_item->collusion_list,10)+"ms"));
+        model->setItem(num,1,new QStandardItem(user_id));
+        if(data_item->collusion_list.size()==1)
+        {
+            model->setItem(num,2,new QStandardItem("非碰撞"));
+            model->setItem(num,3,new QStandardItem("有效"));
+            model->item(num,0)->setBackground(QBrush(QColor(0,255,0)));
+            model->item(num,1)->setBackground(QBrush(QColor(0,255,0)));
+            model->item(num,2)->setBackground(QBrush(QColor(0,255,0)));
+            model->item(num,3)->setBackground(QBrush(QColor(0,255,0)));
+            //model->item(num,4)->setBackground(QBrush(QColor(0,255,0)));
+            //model->item(0)->setBackground(Qt::BrushStyle(QRgb(qRed(20))));
+        }
+        else{
+            QString s;
+            model->setItem(num,2,new QStandardItem(s));
+            model->setItem(num,3,new QStandardItem("无效"));
+            model->item(num,0)->setBackground(QBrush(QColor(252,230,202)));
+            model->item(num,1)->setBackground(QBrush(QColor(252,230,202)));
+            model->item(num,2)->setBackground(QBrush(QColor(252,230,202)));
+            model->item(num,3)->setBackground(QBrush(QColor(252,230,202)));
+            //model->item(num,4)->setBackground(QBrush(QColor(128,128,0)));
+        }
+        model->setItem(num,4,new QStandardItem(QString::number(Channel::frame_total_cnt,10)));
 
 
-
-
-
-
-
-
-
-
-
-
-
+        num++;
+        ui->table_view->scrollToBottom();
+    }
+    else{
+      num=0;
+      table_view_status=true;
+    }
 #endif
 }
 
