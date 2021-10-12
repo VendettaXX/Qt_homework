@@ -187,8 +187,9 @@ void MainWindow::pause_resume()
         //table_view_status=false;
         table_view_status=true;
         model->removeRows(0,model->rowCount());
-        ui->pause_resume_btn->setText("PAUSE");
         p_channel->run_flg=Channel::RUN;
+        ui->pause_resume_btn->setText("PAUSE");
+        qDebug()<<__func__<<__LINE__<<endl;
     }
     else{
         p_channel->steps=ui->steps_line->currentText().toInt();

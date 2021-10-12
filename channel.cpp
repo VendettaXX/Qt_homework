@@ -9,7 +9,6 @@ Channel::Channel(MainWindow * p,QObject *parent):QObject(parent)
     {
         QString name="USER"+QString("%1").arg(i,4,10,QLatin1Char('0'));
         UserNode  * NAME(i)=new UserNode(name);
-        //qDebug()<<NAME(i)->name<<endl;
         user_idle_map.insert(NAME(i)->name,NAME(i));
     }
     QMap<QString,UserNode*>::iterator iter=user_idle_map.begin();
@@ -60,20 +59,18 @@ void * Channel::run_pure()
     {
         while(RUN==run_flg)
         {
-
-
             double n_t;
             unsigned int i=0;
             n_t=Channel::next_time(LAMBDA);
 
             //qDebug()<<__func__<<__LINE__<<endl;
-//            if(steps<=0)
-//            {
-//                p_main->ui->pause_resume_btn->setText("RESUME");
-//                run_flg=STOP;
-//                break;
-//            }
-//            steps--;
+            if(steps<=0)
+            {
+                p_main->ui->pause_resume_btn->setText("RESUME");
+                run_flg=STOP;
+                break;
+            }
+            steps--;
             Channel::setAb_time(Channel::getAb_time()+static_cast<unsigned int>(n_t*1000));
 
             delay_msec(static_cast<int>(n_t*1000));
@@ -98,9 +95,10 @@ void * Channel::run_pure()
             {
                 for(QList<UserNode *>::iterator iter=user_work_list.begin();iter!=user_work_list.end();iter++)
                 {
-                    (*iter)->st=false;
-                    UserInfo * p_info=new UserInfo(_iter.value()->frame_begin_time,index);
-                    UserInfo * p_info_old=new UserInfo((*iter)->frame_begin_time,(*iter)->name);
+                    (*iter)->st=false;   //标记该帧为冲突，send_over的时候，用这个来标记自己是否有效
+                    UserInfo * p_info=new UserInfo(_iter.value()->frame_begin_time,index); //将所有work_list队列里面的所有成员的collusion_list添加上该帧的信息
+
+                    UserInfo * p_info_old=new UserInfo((*iter)->frame_begin_time,(*iter)->name);//将所有work_list的成员信息添加到该帧的collusion_list队列里面
                     (*iter)->collusion_list.append(p_info);
                     _iter.value()->collusion_list.append(p_info_old);
                 }
@@ -108,9 +106,9 @@ void * Channel::run_pure()
                 _iter.value()->st=false;   //别忘了，给自己的usernode中的st打上false
             }
             user_work_list.append(_iter.value());
-
             user_idle_map.erase(_iter);
             QTimer::singleShot(100,this,SLOT(send_over()));
+            qDebug()<<__func__<<__LINE__<<endl;
             work_usr_cnt++;
 
             locker.unlock();
@@ -122,6 +120,7 @@ void * Channel::run_pure()
             emit(over_box_message());
             locker.unlock();
         }
+        delay_msec(1);  //需要加这个，因为当处于STOP状态时候，此函数空转没有任何让出线程的语句，只好加这个好让channel的线程让出时间让send_over执行
     }
     return static_cast<void *>(nullptr);
 }
@@ -229,6 +228,7 @@ void  Channel::delay_msec(unsigned int msec)
 void Channel::send_over()  //QTimer oneshot 从结点发送帧开始 定时结束
 {
     UserNode *temp;
+    qDebug()<<__func__<<__LINE__<<endl;
     //if(RUN==run_flg)   存在prue_aloha 执行到定时器已经开启了，但是run_flg
     // 改变了，这个定时器还是要完成的
     {
@@ -241,7 +241,8 @@ void Channel::send_over()  //QTimer oneshot 从结点发送帧开始 定时结�
             Channel::frame_total_cnt++;
         }
         DataItem * data_item=new DataItem(temp->frame_begin_time,temp->name,temp->st,temp->collusion_list);
-        emit(text_message(data_item));
+        //if(RUN==run_flg)
+             emit(text_message(data_item));
         temp->st=true;    //user_work_list中取出的usernode 中的状态改为true，因为此时此结点已经处于空闲状态
         foreach(UserInfo *p_info,temp->collusion_list)
         {
@@ -263,4 +264,4 @@ void Channel::relay()
 unsigned  int Channel::frame_total_cnt=0;  //信道开启期间，发送的帧的总数目
 unsigned  int Channel::slot_cnt=0;         //时间轴上时隙点的数目
 unsigned  int Channel::ab_time=0;          //信道持续的时间
-Channel::status  Channel::run_flg=Channel::STOP;
+Channel::status  Channel::run_flg=Channel::STOP;  //初始状态为STOP
