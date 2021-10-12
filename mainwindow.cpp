@@ -6,6 +6,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    ui_init();
     QTimer  *timer=new QTimer(this);
     timer->setInterval(1000);
     timer->start();
@@ -30,9 +31,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(thread,&QThread::started,[=](){work_thread->run_slot();});
 #endif
     connect(timer,SIGNAL(timeout()),this,SLOT(time_out()));
-    //connect(thread,&QThread::finished,thread,&QObject::deleteLater);
-    // connect(thread,SIGNAL(finished),work_thread,SLOT(deleteLater()));
-    //connect(thread,SIGNAL(finished),thread,SLOT(deleteLater()));
 }
 
 MainWindow::~MainWindow()
@@ -58,7 +56,13 @@ void MainWindow::init_table(QStandardItemModel * model)
     font.setBold(true);
     ui->table_view->setModel(model);
     ui->table_view->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
- }
+}
+
+void MainWindow::ui_init()
+{
+    ui->pause_resume_btn->setDisabled(true);
+    ui->stop_button->setDisabled(true);
+}
 
 void MainWindow::time_out()
 {

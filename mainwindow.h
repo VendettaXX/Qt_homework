@@ -34,6 +34,7 @@ private:
     QThread *thread;
     InfoWindow *iw;
     int num;
+    void ui_init();
 public slots:
     void time_out();
     void display_mesg(DataItem *);

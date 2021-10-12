@@ -17,8 +17,8 @@
    <widget class="QPushButton" name="stop_button">
     <property name="geometry">
      <rect>
-      <x>340</x>
-      <y>20</y>
+      <x>400</x>
+      <y>10</y>
       <width>111</width>
       <height>51</height>
      </rect>
@@ -30,8 +30,8 @@
    <widget class="QPushButton" name="pause_resume_btn">
     <property name="geometry">
      <rect>
-      <x>220</x>
-      <y>20</y>
+      <x>280</x>
+      <y>10</y>
       <width>111</width>
       <height>51</height>
      </rect>
@@ -53,7 +53,7 @@
    <widget class="QLabel" name="label_6">
     <property name="geometry">
      <rect>
-      <x>20</x>
+      <x>30</x>
       <y>130</y>
       <width>52</width>
       <height>22</height>
@@ -75,7 +75,7 @@
    <widget class="QComboBox" name="steps_line">
     <property name="geometry">
      <rect>
-      <x>70</x>
+      <x>80</x>
       <y>130</y>
       <width>106</width>
       <height>22</height>
@@ -144,173 +144,160 @@
      </property>
     </item>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QLabel" name="label_3">
     <property name="geometry">
      <rect>
-      <x>22</x>
-      <y>13</y>
-      <width>164</width>
-      <height>76</height>
+      <x>90</x>
+      <y>40</y>
+      <width>39</width>
+      <height>16</height>
      </rect>
     </property>
-    <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="0" colspan="3">
-      <widget class="QLabel" name="label">
-       <property name="font">
-        <font>
-         <family>黑体</family>
-         <pointsize>13</pointsize>
-        </font>
-       </property>
-       <property name="text">
-        <string>选择协议:</string>
-       </property>
-       <property name="textFormat">
-        <enum>Qt::PlainText</enum>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="3">
-      <widget class="QComboBox" name="comboBox">
-       <property name="font">
-        <font>
-         <pointsize>13</pointsize>
-         <weight>75</weight>
-         <italic>true</italic>
-         <bold>true</bold>
-         <kerning>false</kerning>
-        </font>
-       </property>
-       <property name="editable">
-        <bool>false</bool>
-       </property>
-       <item>
-        <property name="text">
-         <string>Pure_aloha</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Slot_aloha</string>
-        </property>
-       </item>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_2">
-       <property name="font">
-        <font>
-         <family>黑体</family>
-         <pointsize>13</pointsize>
-        </font>
-       </property>
-       <property name="text">
-        <string>帧时：</string>
-       </property>
-       <property name="textFormat">
-        <enum>Qt::PlainText</enum>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1" colspan="3">
-      <widget class="QComboBox" name="comboBox_2">
-       <property name="font">
-        <font>
-         <pointsize>13</pointsize>
-         <weight>75</weight>
-         <italic>true</italic>
-         <bold>true</bold>
-         <kerning>false</kerning>
-        </font>
-       </property>
-       <property name="editable">
-        <bool>false</bool>
-       </property>
-       <item>
-        <property name="text">
-         <string>50ms</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>100ms</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>200ms</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>300ms</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>400ms</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>500ms</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>600ms</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>800ms</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>900ms</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>1000ms</string>
-        </property>
-       </item>
-      </widget>
-     </item>
-     <item row="2" column="0" colspan="2">
-      <widget class="QLabel" name="label_4">
-       <property name="font">
-        <font>
-         <family>黑体</family>
-         <pointsize>13</pointsize>
-        </font>
-       </property>
-       <property name="text">
-        <string>lambda：</string>
-       </property>
-       <property name="textFormat">
-        <enum>Qt::PlainText</enum>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="2" colspan="2">
-      <widget class="QComboBox" name="comboBox_4">
-       <property name="font">
-        <font>
-         <pointsize>13</pointsize>
-         <weight>75</weight>
-         <italic>true</italic>
-         <bold>true</bold>
-         <kerning>false</kerning>
-        </font>
-       </property>
-       <property name="editable">
-        <bool>false</bool>
-       </property>
-      </widget>
-     </item>
-    </layout>
+    <property name="font">
+     <font>
+      <family>黑体</family>
+      <pointsize>13</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>100MS</string>
+    </property>
+    <property name="textFormat">
+     <enum>Qt::PlainText</enum>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="confirm_protocal">
+    <property name="geometry">
+     <rect>
+      <x>190</x>
+      <y>10</y>
+      <width>81</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>CONFIRM</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="select_protocal">
+    <property name="geometry">
+     <rect>
+      <x>89</x>
+      <y>14</y>
+      <width>96</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>13</pointsize>
+      <weight>75</weight>
+      <italic>true</italic>
+      <bold>true</bold>
+      <kerning>false</kerning>
+     </font>
+    </property>
+    <property name="editable">
+     <bool>false</bool>
+    </property>
+    <item>
+     <property name="text">
+      <string>Pure_aloha</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Slot_aloha</string>
+     </property>
+    </item>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>23</x>
+      <y>14</y>
+      <width>59</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>黑体</family>
+      <pointsize>13</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>选择协议:</string>
+    </property>
+    <property name="textFormat">
+     <enum>Qt::PlainText</enum>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>40</y>
+      <width>39</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>黑体</family>
+      <pointsize>13</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>帧时：</string>
+    </property>
+    <property name="textFormat">
+     <enum>Qt::PlainText</enum>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_4">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>80</y>
+      <width>52</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>黑体</family>
+      <pointsize>13</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>lambda：</string>
+    </property>
+    <property name="textFormat">
+     <enum>Qt::PlainText</enum>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="comboBox_4">
+    <property name="geometry">
+     <rect>
+      <x>90</x>
+      <y>70</y>
+      <width>91</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>13</pointsize>
+      <weight>75</weight>
+      <italic>true</italic>
+      <bold>true</bold>
+      <kerning>false</kerning>
+     </font>
+    </property>
+    <property name="editable">
+     <bool>false</bool>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">

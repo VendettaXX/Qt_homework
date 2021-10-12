@@ -43,8 +43,8 @@
    <widget class="QPushButton" name="save_btn">
     <property name="geometry">
      <rect>
-      <x>200</x>
-      <y>144</y>
+      <x>110</x>
+      <y>150</y>
       <width>181</width>
       <height>51</height>
      </rect>
@@ -186,29 +186,6 @@
      <rect>
       <x>62</x>
       <y>103</y>
-      <width>91</width>
-      <height>22</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_9">
-    <property name="geometry">
-     <rect>
-      <x>42</x>
-      <y>151</y>
-      <width>36</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>FilePath</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_7">
-    <property name="geometry">
-     <rect>
-      <x>82</x>
-      <y>151</y>
       <width>91</width>
       <height>22</height>
      </rect>
