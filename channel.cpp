@@ -53,170 +53,189 @@ void Channel::init_channel()
 }
 
 
-void * Channel::run_pure()
+void * Channel::run()
 {
-    while(true)  //可能会和send_over 冲突，所以加锁
+    while(true)
     {
-        while(RUN==run_flg)
+        if("pure"==proto_flg)
         {
-            double n_t;
-            unsigned int i=0;
-            n_t=Channel::next_time(LAMBDA);
-
-            //qDebug()<<__func__<<__LINE__<<endl;
-            if(steps<=0)
+            while(true)  //可能会和send_over 冲突，所以加锁
             {
-                p_main->ui->pause_resume_btn->setText("RESUME");
-                run_flg=STOP;
-                break;
-            }
-            steps--;
-            Channel::setAb_time(Channel::getAb_time()+static_cast<unsigned int>(n_t*1000));
+                if("slotted"==proto_flg)
+                {
+                    break;
+                }
+                while(RUN==run_flg)
+                {
+                    double n_t;
+                    unsigned int i=0;
+                    n_t=Channel::next_time(LAMBDA);
+                    if("slotted"==proto_flg)
+                    {
+                        break;
+                    }
 
-            delay_msec(static_cast<int>(n_t*1000));
+                    //qDebug()<<__func__<<__LINE__<<endl;
+                    if(steps<=0)
+                    {
+                        p_main->ui->pause_resume_btn->setText("RESUME");
+                        run_flg=STOP;
+                        break;
+                    }
+                    steps--;
+                    Channel::setAb_time(Channel::getAb_time()+static_cast<unsigned int>(n_t*1000));
 
-            QString index="USER "+QString("%1").arg(qrand()%USERNUM,4,10,QLatin1Char('0'));
-            user_id=index;
+                    delay_msec(static_cast<int>(n_t*1000));
 
-            locker.lock();
+                    QString index="USER "+QString("%1").arg(qrand()%USERNUM,4,10,QLatin1Char('0'));
+                    user_id=index;
 
-            /*从IDLE 队列map里面把随机到的work_user 放入普通队列中 */
-            QMap<QString,UserNode *>::iterator _iter=user_idle_map.end(); //_iter是即将到来的新帧
+                    locker.lock();
 
-            while((_iter=user_idle_map.find(index))==user_idle_map.end()) //如果在idle里面找不到随机到的user id
-            {
-                index="USER"+QString("%1").arg(qrand()%USERNUM,4,10,QLatin1Char('0'));
-            }
-            _iter.value()->frame_begin_time=Channel::ab_time;
-            /*如果此时，工作队列为空，则st任然为false，如果此时工作队列为非空，则所有工作队列中的usernode的st变成false，直到过了100ms
+                    /*从IDLE 队列map里面把随机到的work_user 放入普通队列中 */
+                    QMap<QString,UserNode *>::iterator _iter=user_idle_map.end(); //_iter是即将到来的新帧
+
+                    while((_iter=user_idle_map.find(index))==user_idle_map.end()) //如果在idle里面找不到随机到的user id
+                    {
+                        index="USER"+QString("%1").arg(qrand()%USERNUM,4,10,QLatin1Char('0'));
+                    }
+                    _iter.value()->frame_begin_time=Channel::ab_time;
+                    /*如果此时，工作队列为空，则st任然为false，如果此时工作队列为非空，则所有工作队列中的usernode的st变成false，直到过了100ms
             之后的send_over再改会TRUE，还需要再工作队列中的所有元素里面的 collusion队列加上自己，也需要在自己的collusion队列里加上对方
             的信息*/
-            if(!user_work_list.isEmpty())
-            {
-                for(QList<UserNode *>::iterator iter=user_work_list.begin();iter!=user_work_list.end();iter++)
-                {
-                    (*iter)->st=false;   //标记该帧为冲突，send_over的时候，用这个来标记自己是否有效
-                    UserInfo * p_info=new UserInfo(_iter.value()->frame_begin_time,index); //将所有work_list队列里面的所有成员的collusion_list添加上该帧的信息
+                    if(!user_work_list.isEmpty())
+                    {
+                        for(QList<UserNode *>::iterator iter=user_work_list.begin();iter!=user_work_list.end();iter++)
+                        {
+                            (*iter)->st=false;   //标记该帧为冲突，send_over的时候，用这个来标记自己是否有效
+                            UserInfo * p_info=new UserInfo(_iter.value()->frame_begin_time,index); //将所有work_list队列里面的所有成员的collusion_list添加上该帧的信息
 
-                    UserInfo * p_info_old=new UserInfo((*iter)->frame_begin_time,(*iter)->name);//将所有work_list的成员信息添加到该帧的collusion_list队列里面
-                    (*iter)->collusion_list.append(p_info);
-                    _iter.value()->collusion_list.append(p_info_old);
+                            UserInfo * p_info_old=new UserInfo((*iter)->frame_begin_time,(*iter)->name);//将所有work_list的成员信息添加到该帧的collusion_list队列里面
+                            (*iter)->collusion_list.append(p_info);
+                            _iter.value()->collusion_list.append(p_info_old);
+                        }
+
+                        _iter.value()->st=false;   //别忘了，给自己的usernode中的st打上false
+                    }
+                    user_work_list.append(_iter.value());
+                    user_idle_map.erase(_iter);
+                    QTimer::singleShot(100,this,SLOT(send_over()));
+                    qDebug()<<__func__<<__LINE__<<endl;
+                    work_usr_cnt++;
+
+                    locker.unlock();
                 }
-
-                _iter.value()->st=false;   //别忘了，给自己的usernode中的st打上false
+                if(BREAK==run_flg && en_stop_btn==true )
+                {
+                    locker.lock();
+                    en_stop_btn=false;
+                    emit(over_box_message());
+                    locker.unlock();
+                }
+                delay_msec(1);  //需要加这个，因为当处于STOP状态时候，此函数空转没有任何让出线程的语句，只好加这个好让channel的线程让出时间让send_over执行
             }
-            user_work_list.append(_iter.value());
-            user_idle_map.erase(_iter);
-            QTimer::singleShot(100,this,SLOT(send_over()));
-            qDebug()<<__func__<<__LINE__<<endl;
-            work_usr_cnt++;
-
-            locker.unlock();
         }
-        if(BREAK==run_flg && en_stop_btn==true )
+        else
         {
-            locker.lock();
-            en_stop_btn=false;
-            emit(over_box_message());
-            locker.unlock();
+            unsigned int n_t;
+            DataItem * data_item=new DataItem(0,"default",true);
+            QList<QString> work_list;
+            Item * item=new Item(0,1);
+            QString user_name;
+            n_t=static_cast<unsigned int>(next_time(LAMBDA)*1000);
+
+            ab_time+=n_t;
+            qDebug()<<__FUNCTION__<<__LINE__<<"ab_time="<<ab_time<<endl;
+
+            unsigned int temp;
+            temp=(ab_time%100==0)?ab_time:(ab_time/100+1)*100;
+            delay_msec(temp);
+            qDebug()<<temp<<endl;
+            while(true)
+            {
+                if("pure"==proto_flg)
+                {
+                    break;
+                }
+                while(RUN==run_flg )
+                {
+                    if("pure"==proto_flg)
+                    {
+                        //init_channel();
+                        break;
+                    }
+
+                    if(steps<=0)
+                    {
+                        p_main->ui->pause_resume_btn->setText("RESUME");
+                        run_flg=STOP;
+                        break;
+                    }
+                    steps--;
+
+                    qDebug()<<__FUNCTION__<<__LINE__<<"ab_time="<<ab_time<<endl;
+                    //清空work_list
+                    if(!work_list.isEmpty())
+                        work_list.clear();
+                    if(!data_item->collusion_list.isEmpty())
+                        data_item->collusion_list.clear();
+                    qDebug()<<__FUNCTION__<<__LINE__<<"ab_time="<<ab_time<<endl;
+                    //ab_time=static_cast<unsigned int>(next_time(LAMBDA)*1000);
+                    if(ab_time%100!=0){
+                        barrier=(ab_time/100+1)*100;
+                    }
+                    else {
+                        barrier=ab_time;
+                    }
+                    // Item * item=new Item(barrier/100,1);
+                    item->index=barrier/100;
+                    qDebug()<<"barrier"<<barrier<<endl;
+                    item->cnt=1;
+                    user_name="USER"+QString("%1").arg(qrand()%USERNUM,4,10,QLatin1Char('0'));
+                    qDebug()<<"user_name="<<user_name<<endl;
+                    data_item->collusion_list.push_back(new UserInfo(ab_time,user_name));
+                    while((ab_time+=(static_cast<unsigned int>(next_time(LAMBDA)*1000)))<barrier)
+                    {
+                        user_name="USER"+QString("%1").arg(qrand()%USERNUM,4,10,QLatin1Char('0'));
+                        qDebug()<<"user_name="<<user_name<<endl;
+                        data_item->collusion_list.push_back(new UserInfo(ab_time,user_name));
+                        item->cnt++;
+                        delay_msec(qrand()%30);
+                    }
+
+
+                    data_item->time=barrier;
+                    qDebug()<<"barrier="<<barrier<<endl;
+                    emit(text_message(data_item));
+                    //QString id_name="USER"+QString("%1").arg(qrand()%USERNUM,4,10,QLatin1Char('0'));
+                    slot_list.append(item);
+                    if (slot_list.at(slot_list.size()-1)->cnt==1)
+                        frame_total_cnt++;
+                    //slot_list.at(slot_list.size()-1)->name_list.push_back(id_name);
+                    temp=(ab_time%100==0)?ab_time:(ab_time/100+1)*100;
+
+                    delay_msec(temp-barrier);
+                    qDebug()<<"temp-barrier"<<temp-barrier<<"/t"<<"i="<<item->cnt<<endl;
+                }
+                if(BREAK==run_flg && en_stop_btn==true )
+                {
+                    locker.lock();
+                    en_stop_btn=false;
+                    //qDebug()<<"a="<<a<<endl;
+                    qDebug()<<"frame_total_cnt="<<frame_total_cnt<<endl;
+                    //qDebug()<<"总共"<<slot_list.last()->index<<"帧"<<endl;
+                    qDebug()<<"总共"<<item->index<<"帧"<<endl;
+                    //qDebug()<<a*1.0/slot_list.last()->index<<endl;
+                    //qDebug()<<frame_total_cnt*1.0/slot_list.last()->index<<endl;
+                    qDebug()<<frame_total_cnt*1.0/item->index<<endl;
+                    emit(over_box_message());
+                    locker.unlock();
+                }
+            }
         }
-        delay_msec(1);  //需要加这个，因为当处于STOP状态时候，此函数空转没有任何让出线程的语句，只好加这个好让channel的线程让出时间让send_over执行
     }
     return static_cast<void *>(nullptr);
 }
-void Channel::run_slot()
-{
-    //不会和任何其他线程或者定时器冲突，所以不用加锁
-    //unsigned int ab_time=0;
-    unsigned int n_t;
-   // steps=(p_main->ui->steps_line->currentText().toInt());
-   // qDebug()<<"steps="<<steps<<"jlfjaslfjal;fja;fjas;jfa;lj"<<endl;
-    DataItem * data_item=new DataItem(0,"default",true);
-    QList<QString> work_list;
-    Item * item=new Item(0,1);
-    QString user_name;
-    n_t=static_cast<unsigned int>(next_time(LAMBDA)*1000);
-
-    ab_time+=n_t;
-    qDebug()<<__FUNCTION__<<__LINE__<<"ab_time="<<ab_time<<endl;
-
-    unsigned int temp;
-    temp=(ab_time%100==0)?ab_time:(ab_time/100+1)*100;
-    delay_msec(temp);
-    qDebug()<<temp<<endl;
-    while(true)
-    {
-        while(RUN==run_flg )
-        {
-            if(steps<=0)
-            {
-                p_main->ui->pause_resume_btn->setText("RESUME");
-                run_flg=STOP;
-                break;
-            }
-            steps--;
-
-            qDebug()<<__FUNCTION__<<__LINE__<<"ab_time="<<ab_time<<endl;
-            //清空work_list
-            if(!work_list.isEmpty())
-                work_list.clear();
-            if(!data_item->collusion_list.isEmpty())
-                data_item->collusion_list.clear();
-            qDebug()<<__FUNCTION__<<__LINE__<<"ab_time="<<ab_time<<endl;
-            //ab_time=static_cast<unsigned int>(next_time(LAMBDA)*1000);
-            if(ab_time%100!=0){
-                barrier=(ab_time/100+1)*100;
-            }
-            else {
-                barrier=ab_time;
-            }
-            // Item * item=new Item(barrier/100,1);
-            item->index=barrier/100;
-            qDebug()<<"barrier"<<barrier<<endl;
-            item->cnt=1;
-            user_name="USER"+QString("%1").arg(qrand()%USERNUM,4,10,QLatin1Char('0'));
-            qDebug()<<"user_name="<<user_name<<endl;
-            data_item->collusion_list.push_back(new UserInfo(ab_time,user_name));
-            while((ab_time+=(static_cast<unsigned int>(next_time(LAMBDA)*1000)))<barrier)
-            {
-                user_name="USER"+QString("%1").arg(qrand()%USERNUM,4,10,QLatin1Char('0'));
-                qDebug()<<"user_name="<<user_name<<endl;
-                data_item->collusion_list.push_back(new UserInfo(ab_time,user_name));
-                item->cnt++;
-                delay_msec(qrand()%30);
-            }
-
-
-            data_item->time=barrier;
-            qDebug()<<"barrier="<<barrier<<endl;
-            emit(text_message(data_item));
-            //QString id_name="USER"+QString("%1").arg(qrand()%USERNUM,4,10,QLatin1Char('0'));
-            slot_list.append(item);
-            if (slot_list.at(slot_list.size()-1)->cnt==1)
-                frame_total_cnt++;
-            //slot_list.at(slot_list.size()-1)->name_list.push_back(id_name);
-            temp=(ab_time%100==0)?ab_time:(ab_time/100+1)*100;
-
-            delay_msec(temp-barrier);
-            qDebug()<<"temp-barrier"<<temp-barrier<<"/t"<<"i="<<item->cnt<<endl;
-        }
-        if(BREAK==run_flg && en_stop_btn==true )
-        {
-            locker.lock();
-            en_stop_btn=false;
-            //qDebug()<<"a="<<a<<endl;
-            qDebug()<<"frame_total_cnt="<<frame_total_cnt<<endl;
-            //qDebug()<<"总共"<<slot_list.last()->index<<"帧"<<endl;
-            qDebug()<<"总共"<<item->index<<"帧"<<endl;
-            //qDebug()<<a*1.0/slot_list.last()->index<<endl;
-            //qDebug()<<frame_total_cnt*1.0/slot_list.last()->index<<endl;
-            qDebug()<<frame_total_cnt*1.0/item->index<<endl;
-            emit(over_box_message());
-            locker.unlock();
-        }
-    }
-}
-
 void  Channel::delay_msec(unsigned int msec)
 {
     QEventLoop loop;//定义一个新的事件循环

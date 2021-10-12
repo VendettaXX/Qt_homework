@@ -36,6 +36,8 @@ private:
     int num;
     void ui_init();
 public slots:
+    void confirm_protocal();
+    void select_protocal_activited(int);
     void time_out();
     void display_mesg(DataItem *);
     //void display_mesg_slot(SlotData *);

@@ -25,11 +25,14 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->stop_button,SIGNAL(clicked()),this,SLOT(stop()));
     /*channel发送over_box_message,绑定GUI线程弹出窗口 */
     connect(work_thread,SIGNAL(over_box_message()),this,SLOT(display_result()));
-#ifdef PURE
-    connect(thread,&QThread::started,[=](){work_thread->run_pure();});
-#else
-    connect(thread,&QThread::started,[=](){work_thread->run_slot();});
-#endif
+    connect(thread,&QThread::started,[=](){work_thread->run();});
+    connect(ui->confirm_protocal,SIGNAL(clicked()),this,SLOT(confirm_protocal()));
+    connect(ui->select_protocal,SIGNAL(activated(int)),this,SLOT(select_protocal_activited(int)));
+//#ifdef PURE
+//    connect(thread,&QThread::started,[=](){work_thread->run_pure();});
+//#else
+//    connect(thread,&QThread::started,[=](){work_thread->run_slot();});
+//#endif
     connect(timer,SIGNAL(timeout()),this,SLOT(time_out()));
 }
 
@@ -60,8 +63,40 @@ void MainWindow::init_table(QStandardItemModel * model)
 
 void MainWindow::ui_init()
 {
-    ui->pause_resume_btn->setDisabled(true);
-    ui->stop_button->setDisabled(true);
+//    ui->pause_resume_btn->setDisabled(true);
+    //    ui->stop_button->setDisabled(true);
+}
+
+void MainWindow::confirm_protocal()
+{
+    if(ui->confirm_protocal->text()=="确认")
+    {
+        if(ui->select_protocal->currentText()=="Pure_aloha")
+        {
+            p_channel->proto_flg="pure";
+        }
+        else {
+            p_channel->proto_flg="slotted";
+        }
+        ui->confirm_protocal->setText("更改协议");
+        ui->select_protocal->setDisabled(true);
+    }
+    else{
+        ui->select_protocal->setEnabled(true);
+        if(ui->select_protocal->currentText()=="Pure_aloha")
+        {
+            p_channel->proto_flg="pure";
+        }
+        else {
+            p_channel->proto_flg="slotted";
+        }
+    }
+}
+
+void MainWindow::select_protocal_activited(int)
+{
+    qDebug()<<__func__<<__LINE__<<endl;
+    ui->confirm_protocal->setText("确认");
 }
 
 void MainWindow::time_out()
@@ -74,107 +109,107 @@ void MainWindow::time_out()
 
 void MainWindow::display_mesg(DataItem * data_item)
 {
-#ifdef PURE
-    qDebug()<<__func__<<__LINE__<<"table_view_status="<<table_view_status<<endl;
-    /*table_view_status 表征此时是暂停还是停止，num是否清零*/
-    if(table_view_status==true)
+    //#ifdef PURE
+    if("pure"==p_channel->proto_flg)
     {
-        qDebug()<<__func__<<"num="<<num<<endl;
-        foreach(UserInfo * p,data_item->collusion_list)
+        qDebug()<<__func__<<__LINE__<<"table_view_status="<<table_view_status<<endl;
+        /*table_view_status 表征此时是暂停还是停止，num是否清零*/
+        if(table_view_status==true)
         {
-            qDebug()<<"p->user_id="<<p->user_id<<"p->current_time="<<p->current_time<<endl;
-        }
-        qDebug()<<__func__<<__LINE__<<endl;
-        model->setItem(num,0,new QStandardItem(QString::number(data_item->time,10)+"ms"));
-        model->setItem(num,1,new QStandardItem(data_item->user_id));
-        if(data_item->st==true)
-        {
-            model->setItem(num,2,new QStandardItem("非碰撞"));
-            model->setItem(num,3,new QStandardItem("有效"));
-            model->item(num,0)->setBackground(QBrush(QColor(0,255,0)));
-            model->item(num,1)->setBackground(QBrush(QColor(0,255,0)));
-            model->item(num,2)->setBackground(QBrush(QColor(0,255,0)));
-            model->item(num,3)->setBackground(QBrush(QColor(0,255,0)));
-            //model->item(num,4)->setBackground(QBrush(QColor(0,255,0)));
-            //model->item(0)->setBackground(Qt::BrushStyle(QRgb(qRed(20))));
-        }
-        else{
-            QString s;
+            qDebug()<<__func__<<"num="<<num<<endl;
             foreach(UserInfo * p,data_item->collusion_list)
             {
-                s=s+"本帧与"+QString::number(p->current_time,10)+p->user_id+"碰撞"+"/";
+                qDebug()<<"p->user_id="<<p->user_id<<"p->current_time="<<p->current_time<<endl;
             }
-            model->setItem(num,2,new QStandardItem(s));
-            model->setItem(num,3,new QStandardItem("无效"));
-            model->item(num,0)->setBackground(QBrush(QColor(252,230,202)));
-            model->item(num,1)->setBackground(QBrush(QColor(252,230,202)));
-            model->item(num,2)->setBackground(QBrush(QColor(252,230,202)));
-            model->item(num,3)->setBackground(QBrush(QColor(252,230,202)));
-            //model->item(num,4)->setBackground(QBrush(QColor(128,128,0)));
-        }
-        model->setItem(num,4,new QStandardItem(QString::number(Channel::frame_total_cnt,10)));
-
-
-        num++;
-        ui->table_view->scrollToBottom();
-    }
-    else{
-      num=0;
-      table_view_status=true;
-    }
-
-    //delete(data_item);
-    //data_item=nullptr;
-#else
-    //static int num=0;
-    /*table_view_status 表征此时是暂停还是停止，num是否清零*/
-    qDebug()<<"table_view_status="<<table_view_status<<endl;
-    if(table_view_status==true)
-    {
-        QString user_id;
-        model->setItem(num,0,new QStandardItem(QString::number(data_item->time,10)+"ms"));
-        if(!data_item->collusion_list.isEmpty())
-        {
-            qDebug()<<"collusion_list.size="<<data_item->collusion_list.size()<<endl;
-            for(int i=0;i<data_item->collusion_list.size();i++)
+            qDebug()<<__func__<<__LINE__<<endl;
+            model->setItem(num,0,new QStandardItem(QString::number(data_item->time,10)+"ms"));
+            model->setItem(num,1,new QStandardItem(data_item->user_id));
+            if(data_item->st==true)
             {
-                user_id+=(data_item->collusion_list.at(i)->user_id+'\t');
+                model->setItem(num,2,new QStandardItem("非碰撞"));
+                model->setItem(num,3,new QStandardItem("有效"));
+                model->item(num,0)->setBackground(QBrush(QColor(0,255,0)));
+                model->item(num,1)->setBackground(QBrush(QColor(0,255,0)));
+                model->item(num,2)->setBackground(QBrush(QColor(0,255,0)));
+                model->item(num,3)->setBackground(QBrush(QColor(0,255,0)));
+                //model->item(num,4)->setBackground(QBrush(QColor(0,255,0)));
+                //model->item(0)->setBackground(Qt::BrushStyle(QRgb(qRed(20))));
             }
-        }
-        //model->setItem(num,0,new QStandardItem(QString::number(data_item->collusion_list,10)+"ms"));
-        model->setItem(num,1,new QStandardItem(user_id));
-        if(data_item->collusion_list.size()==1)
-        {
-            model->setItem(num,2,new QStandardItem("非碰撞"));
-            model->setItem(num,3,new QStandardItem("有效"));
-            model->item(num,0)->setBackground(QBrush(QColor(0,255,0)));
-            model->item(num,1)->setBackground(QBrush(QColor(0,255,0)));
-            model->item(num,2)->setBackground(QBrush(QColor(0,255,0)));
-            model->item(num,3)->setBackground(QBrush(QColor(0,255,0)));
-            //model->item(num,4)->setBackground(QBrush(QColor(0,255,0)));
-            //model->item(0)->setBackground(Qt::BrushStyle(QRgb(qRed(20))));
+            else{
+                QString s;
+                foreach(UserInfo * p,data_item->collusion_list)
+                {
+                    s=s+"本帧与"+QString::number(p->current_time,10)+p->user_id+"碰撞"+"/";
+                }
+                model->setItem(num,2,new QStandardItem(s));
+                model->setItem(num,3,new QStandardItem("无效"));
+                model->item(num,0)->setBackground(QBrush(QColor(252,230,202)));
+                model->item(num,1)->setBackground(QBrush(QColor(252,230,202)));
+                model->item(num,2)->setBackground(QBrush(QColor(252,230,202)));
+                model->item(num,3)->setBackground(QBrush(QColor(252,230,202)));
+                //model->item(num,4)->setBackground(QBrush(QColor(128,128,0)));
+            }
+            model->setItem(num,4,new QStandardItem(QString::number(Channel::frame_total_cnt,10)));
+
+
+            num++;
+            ui->table_view->scrollToBottom();
         }
         else{
-            QString s;
-            model->setItem(num,2,new QStandardItem(s));
-            model->setItem(num,3,new QStandardItem("无效"));
-            model->item(num,0)->setBackground(QBrush(QColor(252,230,202)));
-            model->item(num,1)->setBackground(QBrush(QColor(252,230,202)));
-            model->item(num,2)->setBackground(QBrush(QColor(252,230,202)));
-            model->item(num,3)->setBackground(QBrush(QColor(252,230,202)));
-            //model->item(num,4)->setBackground(QBrush(QColor(128,128,0)));
+            num=0;
+            table_view_status=true;
         }
-        model->setItem(num,4,new QStandardItem(QString::number(Channel::frame_total_cnt,10)));
+    }
+    else
+    {
+           /*table_view_status 表征此时是暂停还是停止，num是否清零*/
+        qDebug()<<"table_view_status="<<table_view_status<<endl;
+        if(table_view_status==true)
+        {
+            QString user_id;
+            model->setItem(num,0,new QStandardItem(QString::number(data_item->time,10)+"ms"));
+            if(!data_item->collusion_list.isEmpty())
+            {
+                qDebug()<<"collusion_list.size="<<data_item->collusion_list.size()<<endl;
+                for(int i=0;i<data_item->collusion_list.size();i++)
+                {
+                    user_id+=(data_item->collusion_list.at(i)->user_id+'\t');
+                }
+            }
+            //model->setItem(num,0,new QStandardItem(QString::number(data_item->collusion_list,10)+"ms"));
+            model->setItem(num,1,new QStandardItem(user_id));
+            if(data_item->collusion_list.size()==1)
+            {
+                model->setItem(num,2,new QStandardItem("非碰撞"));
+                model->setItem(num,3,new QStandardItem("有效"));
+                model->item(num,0)->setBackground(QBrush(QColor(0,255,0)));
+                model->item(num,1)->setBackground(QBrush(QColor(0,255,0)));
+                model->item(num,2)->setBackground(QBrush(QColor(0,255,0)));
+                model->item(num,3)->setBackground(QBrush(QColor(0,255,0)));
+                //model->item(num,4)->setBackground(QBrush(QColor(0,255,0)));
+                //model->item(0)->setBackground(Qt::BrushStyle(QRgb(qRed(20))));
+            }
+            else{
+                QString s;
+                model->setItem(num,2,new QStandardItem(s));
+                model->setItem(num,3,new QStandardItem("无效"));
+                model->item(num,0)->setBackground(QBrush(QColor(252,230,202)));
+                model->item(num,1)->setBackground(QBrush(QColor(252,230,202)));
+                model->item(num,2)->setBackground(QBrush(QColor(252,230,202)));
+                model->item(num,3)->setBackground(QBrush(QColor(252,230,202)));
+                //model->item(num,4)->setBackground(QBrush(QColor(128,128,0)));
+            }
+            model->setItem(num,4,new QStandardItem(QString::number(Channel::frame_total_cnt,10)));
 
 
-        num++;
-        ui->table_view->scrollToBottom();
+            num++;
+            ui->table_view->scrollToBottom();
+        }
+        else{
+            num=0;
+            table_view_status=true;
+        }
     }
-    else{
-      num=0;
-      table_view_status=true;
-    }
-#endif
 }
 
 void MainWindow::pause_resume()

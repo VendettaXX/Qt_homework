@@ -176,7 +176,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>CONFIRM</string>
+     <string>确认</string>
     </property>
    </widget>
    <widget class="QComboBox" name="select_protocal">
