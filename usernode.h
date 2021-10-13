@@ -13,7 +13,7 @@ public:
 class UserNode
 {
 public:
-    unsigned int frame_begin_time;
+    int frame_begin_time;
     unsigned int frame_num;
     UserNode(QString name):frame_num(0),st(true),name(name){}
     UserNode(bool st):st(st){}
