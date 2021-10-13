@@ -59,7 +59,7 @@ void * Channel::run()
     {
         if("pure"==proto_flg)
         {
-            while(true)  //可能会和send_over 冲突，所以加锁
+            while(true)
             {
                 double n_t;
                 if("slotted"==proto_flg)
@@ -88,9 +88,10 @@ void * Channel::run()
                         break;
                     }
                     steps--;
+                    UserNode temp_node_info("default");
 
                     // 1.如果 work_list为空，延时到ab_time+100ms（1号位置）的地方，循环计算n_t 推进ab_time超越 延时的1号结点，所有在1号位置之前又没有结束的结点，都append到work_list队列里.延时到的结点说明要结束了，
-                   // 从work_list结点里面剔除该结点
+                    // 从work_list结点里面剔除该结点
                     //2.如果work_list不为空，延时到队列头的frame_begin_time+100ms(位置2)的位置，观察ab_time 和位置2的关系，如果ab_time位于位置2之前，则继续循环计算n_t 推进ab_time超越 位置2，所有在位置2之前有没有结束
                     //的结点，都append到work_list队列里，延时到的结点从work_list里面剔除。如果ab_time位于位置2之后，则继续轮回这个过程。
                     if(!user_work_list.isEmpty())
@@ -121,12 +122,79 @@ void * Channel::run()
                             /* 然后把该ab_time对应的结点从idle map里面剔除，加入到work_list */
                             user_work_list.append(_iter.value());
                             user_idle_map.erase(_iter);
-                            work_usr_cnt++;
                             ab_time+=(static_cast<unsigned int>(next_time(LAMBDA)*1000));
                         }
                         /* 把队列头那位的信息发送给主窗口的table_view的显示槽函数*/
                         /* 把队列头的那位，st 清空即置为true，collusion_list 清空，从work_list里面清除，返回到idle map 里面*/
                         /* 把队列头的那位的开始时间信息即frame_begin_time 存放到pre_info中 */
+                        qDebug()<<__func__<<__LINE__<<endl;
+                        DataItem *data_item=new DataItem(user_work_list.first()->frame_begin_time,user_work_list.first()->name,user_work_list.first()->st,user_work_list.first()->collusion_list);
+                        emit(text_message(data_item));
+
+                        user_work_list.first()->st=true;
+                        foreach(UserInfo *info,user_work_list.first()->collusion_list)
+                        {
+                            if(info)
+                            {
+                                user_work_list.first()->collusion_list.removeOne(info);
+                                delete info;
+                                info=nullptr;
+                            }
+                        }
+                        pre_info->frame_begin_time=user_work_list.first()->frame_begin_time;
+                        pre_info->name=user_work_list.first()->name;
+
+
+                    }
+                    else    /*如果work_list 为空，则延时到ab_time+100 ,现在处于的时间点是pre_info的时间点，pre_info记录的是上次结束的结点，此结点现在处于idlemap里面*/
+                    {
+                        int first_position=ab_time+100;
+                        delay_msec(static_cast<int>(ab_time)-pre_info->frame_begin_time);
+                        /*ab_time结点加入work_list ,从idle map里面 剔除 */
+                        QString index="USER "+QString("%1").arg(qrand()%USERNUM,4,10,QLatin1Char('0')); //用随机生成的user_id 从idle map 里面找 结点数据结构
+
+                        while((_iter=user_idle_map.find(index))==user_idle_map.end()) //如果在idle里面找不到随机到的user id,继续找
+                        {
+                            index="USER"+QString("%1").arg(qrand()%USERNUM,4,10,QLatin1Char('0'));
+                        }
+//                        temp_node_info.frame_begin_time=ab_time;
+//                        temp_node_info.name=_iter.value()->name;
+//                        temp_node_info.st=_iter
+                        _iter.value()->frame_begin_time=ab_time;
+                        user_work_list.append(_iter.value());
+                        //user_idle_map.erase(_iter);
+
+
+                        while((ab_time+=(static_cast<unsigned int>(next_time(LAMBDA)*1000)))<first_position)
+                        {
+                            QMap<QString,UserNode *>::iterator __iter=user_idle_map.end();
+                            QString index="USER "+QString("%1").arg(qrand()%USERNUM,4,10,QLatin1Char('0'));
+                            while((__iter=user_idle_map.find(index))==user_idle_map.end()) //如果在idle里面找不到随机到的user id,继续找
+                            {
+                                index="USER"+QString("%1").arg(qrand()%USERNUM,4,10,QLatin1Char('0'));
+                            }
+                            __iter.value()->frame_begin_time=ab_time;
+                            __iter.value()->st=false;
+                            /* 所有work_list中的结点状态st 改为false，表明为碰撞，再在这些结点的collusion_list中标记上自己的信息 */
+                            for(QList<UserNode *>::iterator iter=user_work_list.begin();iter!=user_work_list.end();iter++)
+                            {
+                                (*iter)->st=false;  //标记该帧为冲突
+                                UserInfo * p_info=new UserInfo(__iter.value()->frame_begin_time,index);
+                                UserInfo * p_info_old=new UserInfo((*iter)->frame_begin_time,(*iter)->name);//将所有work_list的成员信息添加到该帧的collusion_list队列里面
+                                (*iter)->collusion_list.append(p_info);
+                                __iter.value()->collusion_list.append(p_info_old);
+                            }
+
+                            /* 然后把该ab_time对应的结点从idle map里面剔除，加入到work_list */
+                            user_work_list.append(__iter.value());
+                            user_idle_map.erase(__iter);
+                            work_usr_cnt++;
+                            // ab_time+=(static_cast<unsigned int>(next_time(LAMBDA)*1000));  //在上面的while里面已经加过了，同队列不为空不一样，因为队列不为空的时候并不知道ab_time 是否超越work_list队头的frame_begin_time+100ms
+                        }
+                        /* 把该结点的信息发送给主窗口的table_view的显示槽函数*/
+                        /* 把该结点的信息，st 清空即置为true，collusion_list 清空，从work_list里面清除，返回到idle map 里面*/
+                        /* 把该结点的开始时间信息即frame_begin_time 存放到pre_info中 */
+                        qDebug()<<__func__<<__LINE__<<endl;
                         DataItem *data_item=new DataItem(_iter.value()->frame_begin_time,_iter.value()->name,_iter.value()->st,_iter.value()->collusion_list);
                         emit(text_message(data_item));
 
@@ -142,80 +210,18 @@ void * Channel::run()
                         }
                         pre_info->frame_begin_time=_iter.value()->frame_begin_time;
                         pre_info->name=_iter.value()->name;
-
+                        user_idle_map.erase(_iter);
 
                     }
-                    else    /*如果work_list 为空，则延时到ab_time+100 ,现在处于的时间点是pre_info的时间点，pre_info记录的是上次结束的结点，此结点现在处于idlemap里面*/
+                    if(BREAK==run_flg && en_stop_btn==true )
                     {
-                        int first_position=ab_time+100;
-                        delay_msec(static_cast<int>(ab_time)-pre_info->frame_begin_time);
-                        /*ab_time结点加入work_list ,从idle map里面 剔除 */
-                        QString index="USER "+QString("%1").arg(qrand()%USERNUM,4,10,QLatin1Char('0'));
-                        while((_iter=user_idle_map.find(index))==user_idle_map.end()) //如果在idle里面找不到随机到的user id,继续找
-                        {
-                            index="USER"+QString("%1").arg(qrand()%USERNUM,4,10,QLatin1Char('0'));
-                        }
-                        _iter.value()->frame_begin_time=ab_time;
-
-
+                        locker.lock();
+                        en_stop_btn=false;
+                        emit(over_box_message());
+                        locker.unlock();
                     }
-
-
-
-
-
-
-
-
-
-                    delay_msec(static_cast<int>(n_t*1000));
-
-                    QString index="USER "+QString("%1").arg(qrand()%USERNUM,4,10,QLatin1Char('0'));
-                    user_id=index;
-
-                    locker.lock();
-
-                    /*从IDLE 队列map里面把随机到的work_user 放入普通队列中 */
-                    QMap<QString,UserNode *>::iterator _iter=user_idle_map.end(); //_iter是即将到来的新帧
-
-                    while((_iter=user_idle_map.find(index))==user_idle_map.end()) //如果在idle里面找不到随机到的user id,继续找
-                    {
-                        index="USER"+QString("%1").arg(qrand()%USERNUM,4,10,QLatin1Char('0'));
-                    }
-                    _iter.value()->frame_begin_time=Channel::ab_time;
-                    /*如果此时，工作队列为空，则st任然为false，如果此时工作队列为非空，则所有工作队列中的usernode的st变成false，直到过了100ms
-            之后的send_over再改会TRUE，还需要再工作队列中的所有元素里面的 collusion队列加上自己，也需要在自己的collusion队列里加上对方
-            的信息*/
-                    if(!user_work_list.isEmpty())
-                    {
-                        for(QList<UserNode *>::iterator iter=user_work_list.begin();iter!=user_work_list.end();iter++)
-                        {
-                            (*iter)->st=false;   //标记该帧为冲突，send_over的时候，用这个来标记自己是否有效
-                            UserInfo * p_info=new UserInfo(_iter.value()->frame_begin_time,index); //将所有work_list队列里面的所有成员的collusion_list添加上该帧的信息
-
-                            UserInfo * p_info_old=new UserInfo((*iter)->frame_begin_time,(*iter)->name);//将所有work_list的成员信息添加到该帧的collusion_list队列里面
-                            (*iter)->collusion_list.append(p_info);
-                            _iter.value()->collusion_list.append(p_info_old);
-                        }
-
-                        _iter.value()->st=false;   //别忘了，给自己的usernode中的st打上false
-                    }
-                    user_work_list.append(_iter.value());
-                    user_idle_map.erase(_iter);
-                    QTimer::singleShot(100,this,SLOT(send_over()));
-                    qDebug()<<__func__<<__LINE__<<endl;
-                    work_usr_cnt++;
-
-                    locker.unlock();
+                    delay_msec(1);  //需要加这个，因为当处于STOP状态时候，此函数空转没有任何让出线程的语句，只好加这个好让channel的线程让出时间让send_over执行
                 }
-                if(BREAK==run_flg && en_stop_btn==true )
-                {
-                    locker.lock();
-                    en_stop_btn=false;
-                    emit(over_box_message());
-                    locker.unlock();
-                }
-                delay_msec(1);  //需要加这个，因为当处于STOP状态时候，此函数空转没有任何让出线程的语句，只好加这个好让channel的线程让出时间让send_over执行
             }
         }
         else
@@ -365,5 +371,5 @@ void Channel::relay()
 }
 unsigned  int Channel::frame_total_cnt=0;  //信道开启期间，发送的帧的总数目
 unsigned  int Channel::slot_cnt=0;         //时间轴上时隙点的数目
-unsigned  int Channel::ab_time=0;          //信道持续的时间
+int Channel::ab_time=0;          //信道持续的时间
 Channel::status  Channel::run_flg=Channel::STOP;  //初始状态为STOP
