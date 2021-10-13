@@ -90,7 +90,7 @@ public:
 
     MainWindow *p_main;
 
-    void * run(void);
+    void  run(void);
 
     void delay_msec(unsigned int msec);
     QTimer * get_QTimer();
@@ -98,12 +98,12 @@ public:
     static unsigned int getAb_time();
     static void setAb_time(unsigned int value);
     QMutex locker;
+    QList <UserNode *> user_work_list;
+    QMap <QString,UserNode *> user_idle_map;
     void init_channel();
 private:
     unsigned int usr_current_cnt;
     QTimer  * timer;
-    QMap <QString,UserNode *> user_idle_map;
-    QList <UserNode *> user_work_list;
     QList <Item *> slot_list;
     MultiAcPro * protocal;
     QString user_id;

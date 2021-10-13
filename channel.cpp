@@ -53,7 +53,7 @@ void Channel::init_channel()
 }
 
 
-void * Channel::run()
+void  Channel::run()
 {
     while(true)
     {
@@ -74,8 +74,6 @@ void * Channel::run()
 
                 while(RUN==run_flg)
                 {
-                    unsigned int i=0;
-                    unsigned int current_time;
                     QMap<QString,UserNode *>::iterator _iter=user_idle_map.end(); //_iter是ab_time 所对应的帧
                     if("slotted"==proto_flg)
                     {
@@ -96,8 +94,12 @@ void * Channel::run()
                     //的结点，都append到work_list队列里，延时到的结点从work_list里面剔除。如果ab_time位于位置2之后，则继续轮回这个过程。
                     if(!user_work_list.isEmpty())
                     {
-                        unsigned int second_position=user_work_list.first()->frame_begin_time+100;
-                        delay_msec(user_work_list.first()->frame_begin_time-pre_info->frame_begin_time);
+                        int delay_time=user_work_list.first()->frame_begin_time-pre_info->frame_begin_time;
+                        int second_position=user_work_list.first()->frame_begin_time+100;
+
+                        //delay_msec(static_cast<unsigned int>(delay_time));
+                        delay_msec(100);
+                        qDebug()<<__func__<<__LINE__<<"delay_time="<<delay_time<<endl;
                         /* ab_time 小于work_list队列头的frame_begin_time+100  */
                         while(ab_time<second_position)
                         {
@@ -130,7 +132,8 @@ void * Channel::run()
                         qDebug()<<__func__<<__LINE__<<endl;
                         DataItem *data_item=new DataItem(user_work_list.first()->frame_begin_time,user_work_list.first()->name,user_work_list.first()->st,user_work_list.first()->collusion_list);
                         emit(text_message(data_item));
-
+                        if(user_work_list.first()->st==true)
+                            frame_total_cnt++;
                         user_work_list.first()->st=true;
                         foreach(UserInfo *info,user_work_list.first()->collusion_list)
                         {
@@ -144,13 +147,17 @@ void * Channel::run()
                         pre_info->frame_begin_time=user_work_list.first()->frame_begin_time;
                         pre_info->name=user_work_list.first()->name;
                         user_idle_map.insert(user_work_list.first()->name,user_work_list.first());
+
                         user_work_list.removeFirst();
 
                     }
                     else    /*如果work_list 为空，则延时到ab_time+100 ,现在处于的时间点是pre_info的时间点，pre_info记录的是上次结束的结点，此结点现在处于idlemap里面*/
                     {
                         int first_position=ab_time+100;
-                        delay_msec(static_cast<int>(ab_time)-pre_info->frame_begin_time);
+                        int delay_time=static_cast<int>(ab_time)-pre_info->frame_begin_time;
+                        qDebug()<<__func__<<__LINE__<<"delay_time="<<delay_time<<endl;
+                        //delay_msec(static_cast<unsigned int>(delay_time));
+                        delay_msec(100);
                         /*ab_time结点加入work_list ,从idle map里面 剔除 */
                         QString index="USER "+QString("%1").arg(qrand()%USERNUM,4,10,QLatin1Char('0')); //用随机生成的user_id 从idle map 里面找 结点数据结构
 
@@ -180,7 +187,7 @@ void * Channel::run()
                             for(QList<UserNode *>::iterator iter=user_work_list.begin();iter!=user_work_list.end();iter++)
                             {
                                 (*iter)->st=false;  //标记该帧为冲突
-                                UserInfo * p_info=new UserInfo(__iter.value()->frame_begin_time,index);
+                                UserInfo * p_info=new UserInfo(static_cast<unsigned int>(__iter.value()->frame_begin_time),index);
                                 UserInfo * p_info_old=new UserInfo((*iter)->frame_begin_time,(*iter)->name);//将所有work_list的成员信息添加到该帧的collusion_list队列里面
                                 (*iter)->collusion_list.append(p_info);
                                 __iter.value()->collusion_list.append(p_info_old);
@@ -198,7 +205,8 @@ void * Channel::run()
                         qDebug()<<__func__<<__LINE__<<endl;
                         DataItem *data_item=new DataItem(_iter.value()->frame_begin_time,_iter.value()->name,_iter.value()->st,_iter.value()->collusion_list);
                         emit(text_message(data_item));
-
+                        if(_iter.value()->st==true)
+                            frame_total_cnt++;
                         _iter.value()->st=true;
                         foreach(UserInfo *info,_iter.value()->collusion_list)
                         {
@@ -214,15 +222,18 @@ void * Channel::run()
                         user_idle_map.erase(_iter);
                         user_work_list.removeFirst();
                     }
-                    if(BREAK==run_flg && en_stop_btn==true )
-                    {
-                        locker.lock();
-                        en_stop_btn=false;
-                        emit(over_box_message());
-                        locker.unlock();
-                    }
+
                     delay_msec(1);  //需要加这个，因为当处于STOP状态时候，此函数空转没有任何让出线程的语句，只好加这个好让channel的线程让出时间让send_over执行
                 }
+                if(BREAK==run_flg && en_stop_btn==true )
+                {
+                    qDebug()<<__func__<<__LINE__<<"break en_stop_btn"<<endl;
+                    locker.lock();
+                    en_stop_btn=false;
+                    emit(over_box_message());
+                    locker.unlock();
+                }
+                delay_msec(1);
             }
         }
         else
@@ -324,7 +335,6 @@ void * Channel::run()
             }
         }
     }
-    return static_cast<void *>(nullptr);
 }
 void  Channel::delay_msec(unsigned int msec)
 {

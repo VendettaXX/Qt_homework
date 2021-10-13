@@ -110,7 +110,7 @@ void MainWindow::time_out()
 void MainWindow::display_mesg(DataItem * data_item)
 {
     //#ifdef PURE
-    if("pure"==p_channel->proto_flg)
+    if("pure"==p_channel->proto_flg )
     {
         qDebug()<<__func__<<__LINE__<<"table_view_status="<<table_view_status<<endl;
         /*table_view_status 表征此时是暂停还是停止，num是否清零*/
@@ -265,9 +265,14 @@ void MainWindow::display_result()
 
 void MainWindow::stop()
 {
+    qDebug()<<__func__<<__LINE__<<endl;
     p_channel->locker.lock();
     p_channel->en_stop_btn=true;
     p_channel->run_flg=Channel::BREAK;
+    foreach(UserNode *p,p_channel->user_work_list)
+    {
+        p_channel->user_idle_map.insert(p->name,p);
+    }
     num=0;
     ui->pause_resume_btn->setText("START");
     p_channel->locker.unlock();

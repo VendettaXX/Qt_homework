@@ -16,7 +16,7 @@ public:
     int frame_begin_time;
     unsigned int frame_num;
     UserNode(QString name):frame_num(0),st(true),name(name){}
-    UserNode(bool st):st(st){}
+    //UserNode(bool st):st(st){}
     bool st;
     QList<UserInfo *> collusion_list;
     QString name;
