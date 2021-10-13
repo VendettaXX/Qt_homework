@@ -143,7 +143,8 @@ void * Channel::run()
                         }
                         pre_info->frame_begin_time=user_work_list.first()->frame_begin_time;
                         pre_info->name=user_work_list.first()->name;
-
+                        user_idle_map.insert(user_work_list.first()->name,user_work_list.first());
+                        user_work_list.removeFirst();
 
                     }
                     else    /*如果work_list 为空，则延时到ab_time+100 ,现在处于的时间点是pre_info的时间点，pre_info记录的是上次结束的结点，此结点现在处于idlemap里面*/
@@ -211,7 +212,7 @@ void * Channel::run()
                         pre_info->frame_begin_time=_iter.value()->frame_begin_time;
                         pre_info->name=_iter.value()->name;
                         user_idle_map.erase(_iter);
-
+                        user_work_list.removeFirst();
                     }
                     if(BREAK==run_flg && en_stop_btn==true )
                     {
